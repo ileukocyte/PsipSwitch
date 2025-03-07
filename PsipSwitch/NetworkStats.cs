@@ -1,127 +1,109 @@
-﻿using PacketDotNet;
+﻿using System;
+using System.Collections.Concurrent;
+
+using PacketDotNet;
 using SharpPcap;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PsipSwitch {
+    public enum Protocol {
+        EthernetII,
+        ARP,
+        IPv4,
+        TCP,
+        UDP,
+        ICMPv4,
+        HTTP,
+        HTTPS,
+    }
+
     public struct ProtocolStat {
         public string Protocol { get; set; }
         public long Count { get; set; }
     }
 
-    public class NetworkStats {
-        public static void UpdateStats(Dictionary<string, long> dict, RawCapture raw) {
+    public static class NetworkStats {
+        public static string GetName(this Protocol protocol) => protocol switch {
+            Protocol.EthernetII => "Ethernet II",
+            Protocol.ARP => "ARP",
+            Protocol.IPv4 => "IPv4",
+            Protocol.TCP => "TCP",
+            Protocol.UDP => "UDP",
+            Protocol.ICMPv4 => "ICMPv4",
+            Protocol.HTTP => "HTTP",
+            Protocol.HTTPS => "HTTPS",
+            _ => throw new NotImplementedException(),
+        };
+
+        public static void UpdateStats(ConcurrentDictionary<Protocol, long> dict, RawCapture raw) {
             var packet = Packet.ParsePacket(raw.LinkLayerType, raw.Data);
 
-            if (dict.ContainsKey("Ethernet II")) {
-                dict["Ethernet II"]++;
-            } else {
-                dict["Ethernet II"] = 1;
-            }
+            dict.AddOrUpdate(Protocol.EthernetII, 1, (_, v) => v + 1);
 
             var arp = packet.Extract<ArpPacket>();
 
             if (arp != null) {
-                if (dict.ContainsKey("ARP")) {
-                    dict["ARP"]++;
-                } else {
-                    dict["ARP"] = 1;
-                }
+                dict.AddOrUpdate(Protocol.ARP, 1, (_, v) => v + 1);
             }
 
             var ip = packet.Extract<IPv4Packet>();
 
             if (ip != null) {
-                if (dict.ContainsKey("IPv4")) {
-                    dict["IPv4"]++;
-                } else {
-                    dict["IPv4"] = 1;
-                }
+                dict.AddOrUpdate(Protocol.IPv4, 1, (_, v) => v + 1);
 
                 var tcp = packet.Extract<TcpPacket>();
 
                 if (tcp != null) {
-                    if (dict.ContainsKey("TCP")) {
-                        dict["TCP"]++;
-                    } else {
-                        dict["TCP"] = 1;
-                    }
+                    dict.AddOrUpdate(Protocol.TCP, 1, (_, v) => v + 1);
 
                     if (tcp.DestinationPort == 80) {
-                        if (dict.ContainsKey("HTTP")) {
-                            dict["HTTP"]++;
-                        } else {
-                            dict["HTTP"] = 1;
-                        }
+                        dict.AddOrUpdate(Protocol.HTTP, 1, (_, v) => v + 1);
                     } else if (tcp.DestinationPort == 443) {
-                        if (dict.ContainsKey("HTTPS")) {
-                            dict["HTTPS"]++;
-                        } else {
-                            dict["HTTPS"] = 1;
-                        }
+                        dict.AddOrUpdate(Protocol.HTTPS, 1, (_, v) => v + 1);
                     }
                 }
 
                 var udp = packet.Extract<UdpPacket>();
 
                 if (udp != null) {
-                    if (dict.ContainsKey("UDP")) {
-                        dict["UDP"]++;
-                    } else {
-                        dict["UDP"] = 1;
-                    }
+                    dict.AddOrUpdate(Protocol.UDP, 1, (_, v) => v + 1);
 
+                    // HTTP/3
                     if (udp.DestinationPort == 80) {
-                        if (dict.ContainsKey("HTTP")) {
-                            dict["HTTP"]++;
-                        } else {
-                            dict["HTTP"] = 1;
-                        }
+                        dict.AddOrUpdate(Protocol.HTTP, 1, (_, v) => v + 1);
                     } else if (udp.DestinationPort == 443) {
-                        if (dict.ContainsKey("HTTPS")) {
-                            dict["HTTPS"]++;
-                        } else {
-                            dict["HTTPS"] = 1;
-                        }
+                        dict.AddOrUpdate(Protocol.HTTPS, 1, (_, v) => v + 1);
                     }
                 }
 
                 var icmp = packet.Extract<IcmpV4Packet>();
 
                 if (icmp != null) {
-                    if (dict.ContainsKey("ICMP")) {
-                        dict["ICMP"]++;
-                    } else {
-                        dict["ICMP"] = 1;
-                    }
+                    dict.AddOrUpdate(Protocol.ICMPv4, 1, (_, v) => v + 1);
                 }
             }
         }
 
-        public static void Reset(Dictionary<string, long> dict) {
-            dict["Ethernet II"] = 0;
-            dict["ARP"] = 0;
-            dict["IPv4"] = 0;
-            dict["TCP"] = 0;
-            dict["UDP"] = 0;
-            dict["ICMP"] = 0;
-            dict["HTTP"] = 0;
-            dict["HTTPS"] = 0;
+        public static void Reset(ConcurrentDictionary<Protocol, long> dict) {
+            dict[Protocol.EthernetII] = 0;
+            dict[Protocol.ARP] = 0;
+            dict[Protocol.IPv4] = 0;
+            dict[Protocol.TCP] = 0;
+            dict[Protocol.UDP] = 0;
+            dict[Protocol.ICMPv4] = 0;
+            dict[Protocol.HTTP] = 0;
+            dict[Protocol.HTTPS] = 0;
         }
 
-        public static Dictionary<string, long> AsDictionary() {
-            return new Dictionary<string, long> {
-                { "Ethernet II", 0 },
-                { "ARP", 0 },
-                { "IPv4", 0 },
-                { "TCP", 0 },
-                { "UDP", 0 },
-                { "ICMP", 0 },
-                { "HTTP", 0 },
-                { "HTTPS", 0 },
+        public static ConcurrentDictionary<Protocol, long> Create() {
+            return new ConcurrentDictionary<Protocol, long> {
+                [Protocol.EthernetII] = 0,
+                [Protocol.ARP] = 0,
+                [Protocol.IPv4] = 0,
+                [Protocol.TCP] = 0,
+                [Protocol.UDP] = 0,
+                [Protocol.ICMPv4] = 0,
+                [Protocol.HTTP] = 0,
+                [Protocol.HTTPS] = 0,
             };
         }
     }

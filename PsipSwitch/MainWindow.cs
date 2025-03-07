@@ -7,32 +7,34 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using SharpPcap;
-using PacketDotNet;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Security.Cryptography;
+using System.Collections.Concurrent;
+
+using PacketDotNet;
+using SharpPcap;
 
 namespace PsipSwitch {
     public partial class MainWindow : Form {
-        private readonly Dictionary<string, long> in1 = NetworkStats.AsDictionary();
-        private readonly Dictionary<string, long> in2 = NetworkStats.AsDictionary();
-        private readonly Dictionary<string, long> out1 = NetworkStats.AsDictionary();
-        private readonly Dictionary<string, long> out2 = NetworkStats.AsDictionary();
+        private readonly object _lock = new();
+
+        private readonly ConcurrentDictionary<Protocol, long> in1 = NetworkStats.Create();
+        private readonly ConcurrentDictionary<Protocol, long> in2 = NetworkStats.Create();
+        private readonly ConcurrentDictionary<Protocol, long> out1 = NetworkStats.Create();
+        private readonly ConcurrentDictionary<Protocol, long> out2 = NetworkStats.Create();
 
         private readonly BindingSource bindingSourceIn1 = [];
         private readonly BindingSource bindingSourceIn2 = [];
         private readonly BindingSource bindingSourceOut1 = [];
         private readonly BindingSource bindingSourceOut2 = [];
 
-        private Boolean IsRunning { get; set; }
-
-        private readonly CaptureDeviceList devices = CaptureDeviceList.Instance;
+        private CaptureDeviceList devices = CaptureDeviceList.Instance;
 
         private ILiveDevice Device1 { get; set; }
         private ILiveDevice Device2 { get; set; }
 
-        private readonly object _balanceLock = new();
+        private Boolean IsRunning { get; set; }
 
         public MainWindow() {
             InitializeComponent();
@@ -40,32 +42,32 @@ namespace PsipSwitch {
 
         private async void MainWindow_Load(object sender, EventArgs e) {
             foreach (var dev in devices) {
-                comboBox1.Items.Add(dev.Description);
-                comboBox2.Items.Add(dev.Description);
+                comboBoxDevice1.Items.Add(dev.Description);
+                comboBoxDevice2.Items.Add(dev.Description);
             }
 
-            dataGridView1.AutoGenerateColumns = true;
-            dataGridView1.DataSource = bindingSourceIn1;
-            await Task.Run(() => RefreshGrid(in1, bindingSourceIn1));
+            dataGridViewIn1.AutoGenerateColumns = true;
+            dataGridViewIn1.DataSource = bindingSourceIn1;
+            await Task.Run(() => RefreshProtocolGrid(in1, bindingSourceIn1));
 
-            dataGridView2.AutoGenerateColumns = true;
-            dataGridView2.DataSource = bindingSourceOut1;
-            await Task.Run(() => RefreshGrid(out1, bindingSourceOut1));
+            dataGridViewOut1.AutoGenerateColumns = true;
+            dataGridViewOut1.DataSource = bindingSourceOut1;
+            await Task.Run(() => RefreshProtocolGrid(out1, bindingSourceOut1));
 
-            dataGridView3.AutoGenerateColumns = true;
-            dataGridView3.DataSource = bindingSourceIn2;
-            await Task.Run(() => RefreshGrid(in2, bindingSourceIn2));
+            dataGridViewIn2.AutoGenerateColumns = true;
+            dataGridViewIn2.DataSource = bindingSourceIn2;
+            await Task.Run(() => RefreshProtocolGrid(in2, bindingSourceIn2));
 
-            dataGridView4.AutoGenerateColumns = true;
-            dataGridView4.DataSource = bindingSourceOut2;
-            await Task.Run(() => RefreshGrid(out2, bindingSourceOut2));
+            dataGridViewOut2.AutoGenerateColumns = true;
+            dataGridViewOut2.DataSource = bindingSourceOut2;
+            await Task.Run(() => RefreshProtocolGrid(out2, bindingSourceOut2));
         }
 
-        private void RefreshGrid(Dictionary<string, long> stats, BindingSource bindingSource) {
+        private void RefreshProtocolGrid(ConcurrentDictionary<Protocol, long> stats, BindingSource bindingSource) {
             if (InvokeRequired) {
-                Invoke(new Action<Dictionary<string, long>, BindingSource>(RefreshGrid), stats, bindingSource);
+                Invoke(new Action<ConcurrentDictionary<Protocol, long>, BindingSource>(RefreshProtocolGrid), stats, bindingSource);
             } else {
-                var list = stats.Select(kv => new ProtocolStat { Protocol = kv.Key, Count = kv.Value }).ToList();
+                var list = stats.Select(kv => new ProtocolStat { Protocol = kv.Key.GetName(), Count = kv.Value }).ToList();
                 bindingSource.DataSource = new BindingList<ProtocolStat>(list);
             }
         }
@@ -78,11 +80,11 @@ namespace PsipSwitch {
             }
 
             NetworkStats.UpdateStats(in1, rawPacket);
-            RefreshGrid(in1, bindingSourceIn1);
+            RefreshProtocolGrid(in1, bindingSourceIn1);
 
             Device2.SendPacket(rawPacket.Data);
             NetworkStats.UpdateStats(out1, rawPacket);
-            RefreshGrid(out1, bindingSourceOut1);
+            RefreshProtocolGrid(out1, bindingSourceOut1);
         }
 
         private void device2_OnPacketArrival(object sender, PacketCapture e) {
@@ -93,42 +95,36 @@ namespace PsipSwitch {
             }
 
             NetworkStats.UpdateStats(in2, rawPacket);
-            RefreshGrid(in2, bindingSourceIn2);
+            RefreshProtocolGrid(in2, bindingSourceIn2);
 
             Device1.SendPacket(rawPacket.Data);
             NetworkStats.UpdateStats(out2, rawPacket);
-            RefreshGrid(out2, bindingSourceOut2);
+            RefreshProtocolGrid(out2, bindingSourceOut2);
         }
 
-        private void button1_Click(object sender, EventArgs e) {
-            lock (_balanceLock) {
+        private void toggleButton_Click(object sender, EventArgs e) {
+            lock (_lock) {
                 if (IsRunning) {
-                    button1.Text = "Start";
+                    toggleButton.Text = "Start";
+                    refreshButton.Enabled = true;
+
                     IsRunning = false;
+
                     CloseDevices();
 
                     return;
                 }
 
-                button1.Text = "Stop";
+                toggleButton.Text = "Stop";
+                refreshButton.Enabled = false;
 
-                NetworkStats.Reset(in1);
-                RefreshGrid(in1, bindingSourceIn1);
-
-                NetworkStats.Reset(in2);
-                RefreshGrid(in2, bindingSourceIn2);
-
-                NetworkStats.Reset(out1);
-                RefreshGrid(out1, bindingSourceOut1);
-
-                NetworkStats.Reset(out2);
-                RefreshGrid(out2, bindingSourceOut2);
+                ResetStats();
 
                 IsRunning = true;
             }
 
-            Device1 = devices[comboBox1.SelectedIndex];
-            Device2 = devices[comboBox2.SelectedIndex];
+            Device1 = devices[comboBoxDevice1.SelectedIndex];
+            Device2 = devices[comboBoxDevice2.SelectedIndex];
 
             Device1.OnPacketArrival += new PacketArrivalEventHandler(device1_OnPacketArrival);
             Device2.OnPacketArrival += new PacketArrivalEventHandler(device2_OnPacketArrival);
@@ -150,6 +146,23 @@ namespace PsipSwitch {
                 Device2.StopCapture();
                 Device2.Close();
             }
+
+            Device1 = null;
+            Device2 = null;
+        }
+
+        private void ResetStats() {
+            NetworkStats.Reset(in1);
+            RefreshProtocolGrid(in1, bindingSourceIn1);
+
+            NetworkStats.Reset(in2);
+            RefreshProtocolGrid(in2, bindingSourceIn2);
+
+            NetworkStats.Reset(out1);
+            RefreshProtocolGrid(out1, bindingSourceOut1);
+
+            NetworkStats.Reset(out2);
+            RefreshProtocolGrid(out2, bindingSourceOut2);
         }
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e) {
@@ -157,13 +170,43 @@ namespace PsipSwitch {
         }
 
         private void comboBox_SelectionChangeCommitted(object sender, EventArgs e) {
-            if (comboBox1.SelectedItem != null && comboBox2.SelectedItem != null) {
-                button1.Enabled = true;
+            if (comboBoxDevice1.SelectedItem != null && comboBoxDevice2.SelectedItem != null) {
+                toggleButton.Enabled = true;
+
+                lock (_lock) {
+                    if (IsRunning &&
+                        (Device1 != devices[comboBoxDevice1.SelectedIndex] || Device2 != devices[comboBoxDevice2.SelectedIndex])
+                    ) {
+                        IsRunning = false;
+                        CloseDevices();
+                        ResetStats();
+                        toggleButton_Click(sender, e);
+                    }
+                }
 
                 return;
             }
 
-            button1.Enabled = false;
+            toggleButton.Enabled = false;
+        }
+
+        private void refreshButton_Click(object sender, EventArgs e) {
+            devices.Refresh();
+
+            comboBoxDevice1.Items.Clear();
+            comboBoxDevice2.Items.Clear();
+
+            comboBoxDevice1.ResetText();
+            comboBoxDevice2.ResetText();
+
+            foreach (var dev in devices) {
+                comboBoxDevice1.Items.Add(dev.Description);
+                comboBoxDevice2.Items.Add(dev.Description);
+            }
+
+            ResetStats();
+
+            toggleButton.Enabled = false;
         }
     }
 }

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using PacketDotNet;
-using SharpPcap;
 
 namespace PsipSwitch {
     static class Program {
