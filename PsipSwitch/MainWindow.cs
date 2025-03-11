@@ -101,13 +101,13 @@ namespace PsipSwitch {
                     bindingSource
                 );
             } else {
-                var list = macTable.Select(kv => new GuiMacAdressTableRecord {
+                var list = macTable.Select(kv => new GuiMacAddressTableRecord {
                     MacAddress = FormatMacAddress(kv.Key),
                     Port = (byte) (kv.Value.Port.MacAddress == Device1.MacAddress ? 1 : 2),
                     LifetimeSeconds = kv.Value.LifetimeSeconds,
                 }).ToList();
 
-                bindingSource.DataSource = new BindingList<GuiMacAdressTableRecord>(list);
+                bindingSource.DataSource = new BindingList<GuiMacAddressTableRecord>(list);
             }
         }
 
@@ -138,8 +138,21 @@ namespace PsipSwitch {
             System.Threading.Timer timer = null;
 
             if (macAddressTable.ContainsKey(sourceMac)) {
-                timeout = macAddressTable[sourceMac].LifetimeSeconds;
-                timer = macAddressTable[sourceMac].Timer;
+                var entry = macAddressTable[sourceMac];
+
+                // cable swap
+                lock (_lock) {
+                    var guiData = (BindingList<GuiMacAddressTableRecord>) bindingSourceMac.DataSource;
+                    var record = guiData.First(r => r.MacAddress == FormatMacAddress(sourceMac));
+                    var port = (byte) (device.MacAddress == Device1.MacAddress ? 1 : 2);
+
+                    if (port != record.Port) {
+                        (Device2, Device1) = (Device1, Device2);
+                    }
+                }
+
+                timeout = entry.LifetimeSeconds;
+                timer = entry.Timer;
                 timer.Change(TimeSpan.FromSeconds(timeout), Timeout.InfiniteTimeSpan);
             } else {
                 timer = new System.Threading.Timer(new TimerCallback((state) => {
@@ -156,8 +169,8 @@ namespace PsipSwitch {
                     LifetimeSeconds = timeout,
                     Timer = timer
                 },
-                (_, v) => new MacAddressTableEntry {
-                    Port = v.Port,
+                (_, _) => new MacAddressTableEntry {
+                    Port = device,
                     LifetimeSeconds = timeout,
                     Timer = timer
                 }

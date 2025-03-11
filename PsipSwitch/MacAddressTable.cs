@@ -16,7 +16,7 @@ namespace PsipSwitch {
         public Timer Timer { get; set; }
     }
 
-    public struct GuiMacAdressTableRecord {
+    public struct GuiMacAddressTableRecord {
         [DisplayName("MAC Address")]
         public string MacAddress { get; set; }
 
