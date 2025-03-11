@@ -9,6 +9,7 @@ namespace PsipSwitch {
         EthernetII,
         ARP,
         IPv4,
+        IPv6,
         TCP,
         UDP,
         ICMPv4,
@@ -16,7 +17,7 @@ namespace PsipSwitch {
         HTTPS,
     }
 
-    public struct ProtocolStat {
+    public struct GuiProtocolStat {
         public string Protocol { get; set; }
         public long Count { get; set; }
     }
@@ -26,6 +27,7 @@ namespace PsipSwitch {
             Protocol.EthernetII => "Ethernet II",
             Protocol.ARP => "ARP",
             Protocol.IPv4 => "IPv4",
+            Protocol.IPv6 => "IPv6",
             Protocol.TCP => "TCP",
             Protocol.UDP => "UDP",
             Protocol.ICMPv4 => "ICMPv4",
@@ -45,10 +47,14 @@ namespace PsipSwitch {
                 dict.AddOrUpdate(Protocol.ARP, 1, (_, v) => v + 1);
             }
 
-            var ip = packet.Extract<IPv4Packet>();
+            var ip = packet.Extract<IPPacket>();
 
             if (ip != null) {
-                dict.AddOrUpdate(Protocol.IPv4, 1, (_, v) => v + 1);
+                if (ip.Version == IPVersion.IPv4) {
+                    dict.AddOrUpdate(Protocol.IPv4, 1, (_, v) => v + 1);
+                } else {
+                    dict.AddOrUpdate(Protocol.IPv6, 1, (_, v) => v + 1);
+                }
 
                 var tcp = packet.Extract<TcpPacket>();
 
@@ -87,6 +93,7 @@ namespace PsipSwitch {
             dict[Protocol.EthernetII] = 0;
             dict[Protocol.ARP] = 0;
             dict[Protocol.IPv4] = 0;
+            dict[Protocol.IPv6] = 0;
             dict[Protocol.TCP] = 0;
             dict[Protocol.UDP] = 0;
             dict[Protocol.ICMPv4] = 0;
@@ -99,6 +106,7 @@ namespace PsipSwitch {
                 [Protocol.EthernetII] = 0,
                 [Protocol.ARP] = 0,
                 [Protocol.IPv4] = 0,
+                [Protocol.IPv6] = 0,
                 [Protocol.TCP] = 0,
                 [Protocol.UDP] = 0,
                 [Protocol.ICMPv4] = 0,

@@ -35,10 +35,15 @@
             this.labelIn2 = new System.Windows.Forms.Label();
             this.labelOut2 = new System.Windows.Forms.Label();
             this.refreshButton = new System.Windows.Forms.Button();
+            this.dataGridViewMac = new System.Windows.Forms.DataGridView();
+            this.clearMacTableButton = new System.Windows.Forms.Button();
+            this.numericUpDownTimeout = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMac)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeout)).BeginInit();
             this.SuspendLayout();
             // 
             // comboBoxDevice1
@@ -83,7 +88,7 @@
             this.dataGridViewIn1.RowHeadersVisible = false;
             this.dataGridViewIn1.RowHeadersWidth = 51;
             this.dataGridViewIn1.RowTemplate.Height = 24;
-            this.dataGridViewIn1.Size = new System.Drawing.Size(263, 195);
+            this.dataGridViewIn1.Size = new System.Drawing.Size(263, 216);
             this.dataGridViewIn1.TabIndex = 3;
             // 
             // dataGridViewOut1
@@ -93,13 +98,13 @@
             this.dataGridViewOut1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewOut1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewOut1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewOut1.Location = new System.Drawing.Point(12, 309);
+            this.dataGridViewOut1.Location = new System.Drawing.Point(12, 343);
             this.dataGridViewOut1.Name = "dataGridViewOut1";
             this.dataGridViewOut1.ReadOnly = true;
             this.dataGridViewOut1.RowHeadersVisible = false;
             this.dataGridViewOut1.RowHeadersWidth = 51;
             this.dataGridViewOut1.RowTemplate.Height = 24;
-            this.dataGridViewOut1.Size = new System.Drawing.Size(263, 195);
+            this.dataGridViewOut1.Size = new System.Drawing.Size(263, 216);
             this.dataGridViewOut1.TabIndex = 4;
             // 
             // dataGridViewIn2
@@ -115,7 +120,7 @@
             this.dataGridViewIn2.RowHeadersVisible = false;
             this.dataGridViewIn2.RowHeadersWidth = 51;
             this.dataGridViewIn2.RowTemplate.Height = 24;
-            this.dataGridViewIn2.Size = new System.Drawing.Size(263, 195);
+            this.dataGridViewIn2.Size = new System.Drawing.Size(263, 216);
             this.dataGridViewIn2.TabIndex = 5;
             // 
             // dataGridViewOut2
@@ -125,20 +130,20 @@
             this.dataGridViewOut2.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewOut2.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewOut2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridViewOut2.Location = new System.Drawing.Point(887, 309);
+            this.dataGridViewOut2.Location = new System.Drawing.Point(887, 343);
             this.dataGridViewOut2.Name = "dataGridViewOut2";
             this.dataGridViewOut2.ReadOnly = true;
             this.dataGridViewOut2.RowHeadersVisible = false;
             this.dataGridViewOut2.RowHeadersWidth = 51;
             this.dataGridViewOut2.RowTemplate.Height = 24;
-            this.dataGridViewOut2.Size = new System.Drawing.Size(263, 195);
+            this.dataGridViewOut2.Size = new System.Drawing.Size(263, 216);
             this.dataGridViewOut2.TabIndex = 6;
             // 
             // labelIn1
             // 
             this.labelIn1.AutoSize = true;
             this.labelIn1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelIn1.Location = new System.Drawing.Point(68, 268);
+            this.labelIn1.Location = new System.Drawing.Point(68, 289);
             this.labelIn1.Name = "labelIn1";
             this.labelIn1.Size = new System.Drawing.Size(155, 16);
             this.labelIn1.TabIndex = 7;
@@ -149,7 +154,7 @@
             // 
             this.labelOut1.AutoSize = true;
             this.labelOut1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelOut1.Location = new System.Drawing.Point(68, 507);
+            this.labelOut1.Location = new System.Drawing.Point(68, 562);
             this.labelOut1.Name = "labelOut1";
             this.labelOut1.Size = new System.Drawing.Size(155, 16);
             this.labelOut1.TabIndex = 8;
@@ -160,7 +165,7 @@
             // 
             this.labelIn2.AutoSize = true;
             this.labelIn2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelIn2.Location = new System.Drawing.Point(950, 268);
+            this.labelIn2.Location = new System.Drawing.Point(944, 289);
             this.labelIn2.Name = "labelIn2";
             this.labelIn2.Size = new System.Drawing.Size(155, 16);
             this.labelIn2.TabIndex = 9;
@@ -171,7 +176,7 @@
             // 
             this.labelOut2.AutoSize = true;
             this.labelOut2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelOut2.Location = new System.Drawing.Point(950, 507);
+            this.labelOut2.Location = new System.Drawing.Point(944, 562);
             this.labelOut2.Name = "labelOut2";
             this.labelOut2.Size = new System.Drawing.Size(155, 16);
             this.labelOut2.TabIndex = 10;
@@ -188,12 +193,50 @@
             this.refreshButton.UseVisualStyleBackColor = true;
             this.refreshButton.Click += new System.EventHandler(this.refreshButton_Click);
             // 
+            // dataGridViewMac
+            // 
+            this.dataGridViewMac.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridViewMac.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.dataGridViewMac.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewMac.Location = new System.Drawing.Point(281, 70);
+            this.dataGridViewMac.Name = "dataGridViewMac";
+            this.dataGridViewMac.RowHeadersVisible = false;
+            this.dataGridViewMac.RowHeadersWidth = 51;
+            this.dataGridViewMac.RowTemplate.Height = 24;
+            this.dataGridViewMac.Size = new System.Drawing.Size(600, 216);
+            this.dataGridViewMac.TabIndex = 12;
+            // 
+            // clearMacTableButton
+            // 
+            this.clearMacTableButton.Location = new System.Drawing.Point(359, 292);
+            this.clearMacTableButton.Name = "clearMacTableButton";
+            this.clearMacTableButton.Size = new System.Drawing.Size(214, 34);
+            this.clearMacTableButton.TabIndex = 13;
+            this.clearMacTableButton.Text = "Clear Table";
+            this.clearMacTableButton.UseVisualStyleBackColor = true;
+            this.clearMacTableButton.Click += new System.EventHandler(this.clearMacTableButton_Click);
+            // 
+            // numericUpDownTimeout
+            // 
+            this.numericUpDownTimeout.Location = new System.Drawing.Point(651, 299);
+            this.numericUpDownTimeout.Name = "numericUpDownTimeout";
+            this.numericUpDownTimeout.Size = new System.Drawing.Size(120, 22);
+            this.numericUpDownTimeout.TabIndex = 14;
+            this.numericUpDownTimeout.Value = new decimal(new int[] {
+            60,
+            0,
+            0,
+            0});
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(1162, 715);
+            this.ClientSize = new System.Drawing.Size(1162, 632);
+            this.Controls.Add(this.numericUpDownTimeout);
+            this.Controls.Add(this.clearMacTableButton);
+            this.Controls.Add(this.dataGridViewMac);
             this.Controls.Add(this.refreshButton);
             this.Controls.Add(this.labelOut2);
             this.Controls.Add(this.labelIn2);
@@ -217,6 +260,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMac)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeout)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -236,6 +281,9 @@
         private System.Windows.Forms.Label labelIn2;
         private System.Windows.Forms.Label labelOut2;
         private System.Windows.Forms.Button refreshButton;
+        private System.Windows.Forms.DataGridView dataGridViewMac;
+        private System.Windows.Forms.Button clearMacTableButton;
+        private System.Windows.Forms.NumericUpDown numericUpDownTimeout;
     }
 }
 
