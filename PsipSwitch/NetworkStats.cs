@@ -61,9 +61,9 @@ namespace PsipSwitch {
                 if (tcp != null) {
                     dict.AddOrUpdate(Protocol.TCP, 1, (_, v) => v + 1);
 
-                    if (tcp.DestinationPort == 80) {
+                    if (tcp.DestinationPort == 80 || tcp.SourcePort == 80) {
                         dict.AddOrUpdate(Protocol.HTTP, 1, (_, v) => v + 1);
-                    } else if (tcp.DestinationPort == 443) {
+                    } else if (tcp.DestinationPort == 443 || tcp.SourcePort == 443) {
                         dict.AddOrUpdate(Protocol.HTTPS, 1, (_, v) => v + 1);
                     }
                 }
@@ -74,9 +74,9 @@ namespace PsipSwitch {
                     dict.AddOrUpdate(Protocol.UDP, 1, (_, v) => v + 1);
 
                     // HTTP/3
-                    if (udp.DestinationPort == 80) {
+                    if (udp.DestinationPort == 80 || udp.SourcePort == 80) {
                         dict.AddOrUpdate(Protocol.HTTP, 1, (_, v) => v + 1);
-                    } else if (udp.DestinationPort == 443) {
+                    } else if (udp.DestinationPort == 443 || udp.SourcePort == 443) {
                         dict.AddOrUpdate(Protocol.HTTPS, 1, (_, v) => v + 1);
                     }
                 }

@@ -227,6 +227,7 @@
             0,
             0,
             0});
+            this.numericUpDownTimeout.ValueChanged += new System.EventHandler(this.numericUpDownTimeout_ValueChanged);
             // 
             // MainWindow
             // 

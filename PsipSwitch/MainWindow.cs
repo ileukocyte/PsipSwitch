@@ -17,7 +17,7 @@ using SharpPcap;
 
 namespace PsipSwitch {
     public partial class MainWindow : Form {
-        private const short DeviceTimeoutSeconds = 5;
+        private const short DeviceTimeoutSeconds = 15;
 
         private static readonly PhysicalAddress BroadcastMac = PhysicalAddress.Parse("FF-FF-FF-FF-FF-FF");
 
@@ -182,13 +182,19 @@ namespace PsipSwitch {
 
             if (destMac.Equals(BroadcastMac) || !macAddressTable.ContainsKey(destMac)) {
                 if (srcRecord.Port.MacAddress == Device1.MacAddress) {
-                    Device2.SendPacket(rawPacket.Data);
-                    NetworkStats.UpdateStats(out1, rawPacket);
-                    RefreshProtocolGrid(out1, bindingSourceOut1);
+                    try {
+                        Device2.SendPacket(rawPacket.Data);
+                        NetworkStats.UpdateStats(out1, rawPacket);
+                        RefreshProtocolGrid(out1, bindingSourceOut1);
+                    } catch (Exception) {
+                    }
                 } else {
-                    Device1.SendPacket(rawPacket.Data);
-                    NetworkStats.UpdateStats(out2, rawPacket);
-                    RefreshProtocolGrid(out2, bindingSourceOut2);
+                    try {
+                        Device1.SendPacket(rawPacket.Data);
+                        NetworkStats.UpdateStats(out2, rawPacket);
+                        RefreshProtocolGrid(out2, bindingSourceOut2);
+                    } catch (Exception) {
+                    }
                 }
 
                 return;
@@ -201,13 +207,19 @@ namespace PsipSwitch {
             }
 
             if (destRecord.Port.MacAddress == Device1.MacAddress) {
-                Device1.SendPacket(rawPacket.Data);
-                NetworkStats.UpdateStats(out2, rawPacket);
-                RefreshProtocolGrid(out2, bindingSourceOut1);
+                try {
+                    Device1.SendPacket(rawPacket.Data);
+                    NetworkStats.UpdateStats(out2, rawPacket);
+                    RefreshProtocolGrid(out2, bindingSourceOut2);
+                } catch (Exception) {
+                }
             } else {
-                Device2.SendPacket(rawPacket.Data);
-                NetworkStats.UpdateStats(out1, rawPacket);
-                RefreshProtocolGrid(out1, bindingSourceOut2);
+                try {
+                    Device2.SendPacket(rawPacket.Data);
+                    NetworkStats.UpdateStats(out1, rawPacket);
+                    RefreshProtocolGrid(out1, bindingSourceOut1);
+                } catch (Exception) {
+                }
             }
         }
 
@@ -358,6 +370,22 @@ namespace PsipSwitch {
             Parallel.ForEach(macAddressTable, kv => kv.Value.Timer.Dispose());
             macAddressTable.Clear();
             RefreshMacGrid(macAddressTable, bindingSourceMac);
+        }
+
+        private void numericUpDownTimeout_ValueChanged(object sender, EventArgs e) {
+            if (!IsRunning) {
+                return;
+            }
+
+            var value = (double) numericUpDownTimeout.Value;
+            Parallel.ForEach(macAddressTable, kv => {
+                var entry = kv.Value;
+
+                entry.LifetimeSeconds = value;
+                entry.Timer.Change(TimeSpan.FromSeconds(value), Timeout.InfiniteTimeSpan);
+
+                macAddressTable[kv.Key] = entry;
+            });
         }
     }
 }
