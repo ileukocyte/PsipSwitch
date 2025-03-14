@@ -38,12 +38,21 @@
             this.dataGridViewMac = new System.Windows.Forms.DataGridView();
             this.clearMacTableButton = new System.Windows.Forms.Button();
             this.numericUpDownTimeout = new System.Windows.Forms.NumericUpDown();
+            this.ifStatsResetButton1 = new System.Windows.Forms.Button();
+            this.ifStatsResetButton2 = new System.Windows.Forms.Button();
+            this.syslogGroupBox = new System.Windows.Forms.GroupBox();
+            this.srcAddrTextBox = new System.Windows.Forms.TextBox();
+            this.srcAddrLabel = new System.Windows.Forms.Label();
+            this.dstAddrLabel = new System.Windows.Forms.Label();
+            this.dstAddrTextBox = new System.Windows.Forms.TextBox();
+            this.syslogToggleButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMac)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeout)).BeginInit();
+            this.syslogGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // comboBoxDevice1
@@ -229,12 +238,91 @@
             0});
             this.numericUpDownTimeout.ValueChanged += new System.EventHandler(this.numericUpDownTimeout_ValueChanged);
             // 
+            // ifStatsResetButton1
+            // 
+            this.ifStatsResetButton1.Location = new System.Drawing.Point(38, 590);
+            this.ifStatsResetButton1.Name = "ifStatsResetButton1";
+            this.ifStatsResetButton1.Size = new System.Drawing.Size(214, 34);
+            this.ifStatsResetButton1.TabIndex = 15;
+            this.ifStatsResetButton1.Text = "Reset";
+            this.ifStatsResetButton1.UseVisualStyleBackColor = true;
+            this.ifStatsResetButton1.Click += new System.EventHandler(this.ifStatsResetButton_Click);
+            // 
+            // ifStatsResetButton2
+            // 
+            this.ifStatsResetButton2.Location = new System.Drawing.Point(913, 590);
+            this.ifStatsResetButton2.Name = "ifStatsResetButton2";
+            this.ifStatsResetButton2.Size = new System.Drawing.Size(214, 34);
+            this.ifStatsResetButton2.TabIndex = 16;
+            this.ifStatsResetButton2.Text = "Reset";
+            this.ifStatsResetButton2.UseVisualStyleBackColor = true;
+            this.ifStatsResetButton2.Click += new System.EventHandler(this.ifStatsResetButton_Click);
+            // 
+            // syslogGroupBox
+            // 
+            this.syslogGroupBox.Controls.Add(this.syslogToggleButton);
+            this.syslogGroupBox.Controls.Add(this.dstAddrLabel);
+            this.syslogGroupBox.Controls.Add(this.dstAddrTextBox);
+            this.syslogGroupBox.Controls.Add(this.srcAddrLabel);
+            this.syslogGroupBox.Controls.Add(this.srcAddrTextBox);
+            this.syslogGroupBox.Location = new System.Drawing.Point(281, 343);
+            this.syslogGroupBox.Name = "syslogGroupBox";
+            this.syslogGroupBox.Size = new System.Drawing.Size(600, 216);
+            this.syslogGroupBox.TabIndex = 17;
+            this.syslogGroupBox.TabStop = false;
+            this.syslogGroupBox.Text = "Syslog";
+            // 
+            // srcAddrTextBox
+            // 
+            this.srcAddrTextBox.Location = new System.Drawing.Point(253, 56);
+            this.srcAddrTextBox.Name = "srcAddrTextBox";
+            this.srcAddrTextBox.Size = new System.Drawing.Size(171, 22);
+            this.srcAddrTextBox.TabIndex = 0;
+            // 
+            // srcAddrLabel
+            // 
+            this.srcAddrLabel.AutoSize = true;
+            this.srcAddrLabel.Location = new System.Drawing.Point(139, 59);
+            this.srcAddrLabel.Name = "srcAddrLabel";
+            this.srcAddrLabel.Size = new System.Drawing.Size(108, 16);
+            this.srcAddrLabel.TabIndex = 1;
+            this.srcAddrLabel.Text = "Client IP address";
+            // 
+            // dstAddrLabel
+            // 
+            this.dstAddrLabel.AutoSize = true;
+            this.dstAddrLabel.Location = new System.Drawing.Point(132, 87);
+            this.dstAddrLabel.Name = "dstAddrLabel";
+            this.dstAddrLabel.Size = new System.Drawing.Size(115, 16);
+            this.dstAddrLabel.TabIndex = 3;
+            this.dstAddrLabel.Text = "Server IP address";
+            // 
+            // dstAddrTextBox
+            // 
+            this.dstAddrTextBox.Location = new System.Drawing.Point(253, 84);
+            this.dstAddrTextBox.Name = "dstAddrTextBox";
+            this.dstAddrTextBox.Size = new System.Drawing.Size(171, 22);
+            this.dstAddrTextBox.TabIndex = 2;
+            // 
+            // syslogToggleButton
+            // 
+            this.syslogToggleButton.Location = new System.Drawing.Point(187, 128);
+            this.syslogToggleButton.Name = "syslogToggleButton";
+            this.syslogToggleButton.Size = new System.Drawing.Size(214, 34);
+            this.syslogToggleButton.TabIndex = 4;
+            this.syslogToggleButton.Text = "Start";
+            this.syslogToggleButton.UseVisualStyleBackColor = true;
+            this.syslogToggleButton.Click += new System.EventHandler(this.syslogToggleButton_Click);
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(1162, 632);
+            this.ClientSize = new System.Drawing.Size(1162, 770);
+            this.Controls.Add(this.syslogGroupBox);
+            this.Controls.Add(this.ifStatsResetButton2);
+            this.Controls.Add(this.ifStatsResetButton1);
             this.Controls.Add(this.numericUpDownTimeout);
             this.Controls.Add(this.clearMacTableButton);
             this.Controls.Add(this.dataGridViewMac);
@@ -263,6 +351,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMac)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeout)).EndInit();
+            this.syslogGroupBox.ResumeLayout(false);
+            this.syslogGroupBox.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -285,6 +375,14 @@
         private System.Windows.Forms.DataGridView dataGridViewMac;
         private System.Windows.Forms.Button clearMacTableButton;
         private System.Windows.Forms.NumericUpDown numericUpDownTimeout;
+        private System.Windows.Forms.Button ifStatsResetButton1;
+        private System.Windows.Forms.Button ifStatsResetButton2;
+        private System.Windows.Forms.GroupBox syslogGroupBox;
+        private System.Windows.Forms.Label srcAddrLabel;
+        private System.Windows.Forms.TextBox srcAddrTextBox;
+        private System.Windows.Forms.Label dstAddrLabel;
+        private System.Windows.Forms.TextBox dstAddrTextBox;
+        private System.Windows.Forms.Button syslogToggleButton;
     }
 }
 

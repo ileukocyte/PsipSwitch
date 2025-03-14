@@ -44,7 +44,8 @@ namespace PsipSwitch {
 
         private readonly ConcurrentDictionary<ILiveDevice, System.Threading.Timer> deviceTimers = [];
 
-        private Boolean IsRunning { get; set; }
+        private bool IsRunning { get; set; }
+        private bool SyslogEnabled { get; set; }
 
         public MainWindow() {
             InitializeComponent();
@@ -303,18 +304,22 @@ namespace PsipSwitch {
             deviceTimers.Clear();
         }
 
-        private void ResetStats() {
-            NetworkStats.Reset(in1);
-            RefreshProtocolGrid(in1, bindingSourceIn1);
+        private void ResetStats(bool resetDevice1 = true, bool resetDevice2 = true) {
+            if (resetDevice1) {
+                NetworkStats.Reset(in1);
+                RefreshProtocolGrid(in1, bindingSourceIn1);
 
-            NetworkStats.Reset(in2);
-            RefreshProtocolGrid(in2, bindingSourceIn2);
+                NetworkStats.Reset(out1);
+                RefreshProtocolGrid(out1, bindingSourceOut1);
+            }
 
-            NetworkStats.Reset(out1);
-            RefreshProtocolGrid(out1, bindingSourceOut1);
+            if (resetDevice2) {
+                NetworkStats.Reset(in2);
+                RefreshProtocolGrid(in2, bindingSourceIn2);
 
-            NetworkStats.Reset(out2);
-            RefreshProtocolGrid(out2, bindingSourceOut2);
+                NetworkStats.Reset(out2);
+                RefreshProtocolGrid(out2, bindingSourceOut2);
+            }
         }
 
         private void MainWindow_FormClosing(object sender, FormClosingEventArgs e) {
@@ -386,6 +391,28 @@ namespace PsipSwitch {
 
                 macAddressTable[kv.Key] = entry;
             });
+        }
+
+        private void ifStatsResetButton_Click(object sender, EventArgs e) {
+            if (sender == ifStatsResetButton1) {
+                ResetStats(resetDevice2: false);
+
+                return;
+            }
+
+            ResetStats(resetDevice1: false);
+        }
+
+        private void syslogToggleButton_Click(object sender, EventArgs e) {
+            srcAddrTextBox.Enabled = !srcAddrTextBox.Enabled;
+            dstAddrTextBox.Enabled = !dstAddrTextBox.Enabled;
+            SyslogEnabled = !SyslogEnabled;
+
+            if (SyslogEnabled) {
+                syslogToggleButton.Text = "Stop";
+            } else {
+                syslogToggleButton.Text = "Start";
+            }
         }
     }
 }
