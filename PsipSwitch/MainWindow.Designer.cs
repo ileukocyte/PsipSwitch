@@ -41,11 +41,15 @@
             this.ifStatsResetButton1 = new System.Windows.Forms.Button();
             this.ifStatsResetButton2 = new System.Windows.Forms.Button();
             this.syslogGroupBox = new System.Windows.Forms.GroupBox();
-            this.srcAddrTextBox = new System.Windows.Forms.TextBox();
-            this.srcAddrLabel = new System.Windows.Forms.Label();
+            this.syslogToggleButton = new System.Windows.Forms.Button();
             this.dstAddrLabel = new System.Windows.Forms.Label();
             this.dstAddrTextBox = new System.Windows.Forms.TextBox();
-            this.syslogToggleButton = new System.Windows.Forms.Button();
+            this.srcAddrLabel = new System.Windows.Forms.Label();
+            this.srcAddrTextBox = new System.Windows.Forms.TextBox();
+            this.dataGridViewAcl = new System.Windows.Forms.DataGridView();
+            this.aclAddButton = new System.Windows.Forms.Button();
+            this.aclRemoveButton = new System.Windows.Forms.Button();
+            this.aclClearButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn2)).BeginInit();
@@ -53,10 +57,12 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewMac)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeout)).BeginInit();
             this.syslogGroupBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAcl)).BeginInit();
             this.SuspendLayout();
             // 
             // comboBoxDevice1
             // 
+            this.comboBoxDevice1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDevice1.FormattingEnabled = true;
             this.comboBoxDevice1.Location = new System.Drawing.Point(12, 27);
             this.comboBoxDevice1.Name = "comboBoxDevice1";
@@ -66,6 +72,7 @@
             // 
             // comboBoxDevice2
             // 
+            this.comboBoxDevice2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comboBoxDevice2.FormattingEnabled = true;
             this.comboBoxDevice2.Location = new System.Drawing.Point(887, 27);
             this.comboBoxDevice2.Name = "comboBoxDevice2";
@@ -228,6 +235,11 @@
             // numericUpDownTimeout
             // 
             this.numericUpDownTimeout.Location = new System.Drawing.Point(651, 299);
+            this.numericUpDownTimeout.Maximum = new decimal(new int[] {
+            86400,
+            0,
+            0,
+            0});
             this.numericUpDownTimeout.Name = "numericUpDownTimeout";
             this.numericUpDownTimeout.Size = new System.Drawing.Size(120, 22);
             this.numericUpDownTimeout.TabIndex = 14;
@@ -272,21 +284,16 @@
             this.syslogGroupBox.TabStop = false;
             this.syslogGroupBox.Text = "Syslog";
             // 
-            // srcAddrTextBox
+            // syslogToggleButton
             // 
-            this.srcAddrTextBox.Location = new System.Drawing.Point(253, 56);
-            this.srcAddrTextBox.Name = "srcAddrTextBox";
-            this.srcAddrTextBox.Size = new System.Drawing.Size(171, 22);
-            this.srcAddrTextBox.TabIndex = 0;
-            // 
-            // srcAddrLabel
-            // 
-            this.srcAddrLabel.AutoSize = true;
-            this.srcAddrLabel.Location = new System.Drawing.Point(139, 59);
-            this.srcAddrLabel.Name = "srcAddrLabel";
-            this.srcAddrLabel.Size = new System.Drawing.Size(108, 16);
-            this.srcAddrLabel.TabIndex = 1;
-            this.srcAddrLabel.Text = "Client IP address";
+            this.syslogToggleButton.Enabled = false;
+            this.syslogToggleButton.Location = new System.Drawing.Point(187, 128);
+            this.syslogToggleButton.Name = "syslogToggleButton";
+            this.syslogToggleButton.Size = new System.Drawing.Size(214, 34);
+            this.syslogToggleButton.TabIndex = 4;
+            this.syslogToggleButton.Text = "Start";
+            this.syslogToggleButton.UseVisualStyleBackColor = true;
+            this.syslogToggleButton.Click += new System.EventHandler(this.syslogToggleButton_Click);
             // 
             // dstAddrLabel
             // 
@@ -303,23 +310,80 @@
             this.dstAddrTextBox.Name = "dstAddrTextBox";
             this.dstAddrTextBox.Size = new System.Drawing.Size(171, 22);
             this.dstAddrTextBox.TabIndex = 2;
+            this.dstAddrTextBox.TextChanged += new System.EventHandler(this.ipAddrTextBox_TextChanged);
             // 
-            // syslogToggleButton
+            // srcAddrLabel
             // 
-            this.syslogToggleButton.Location = new System.Drawing.Point(187, 128);
-            this.syslogToggleButton.Name = "syslogToggleButton";
-            this.syslogToggleButton.Size = new System.Drawing.Size(214, 34);
-            this.syslogToggleButton.TabIndex = 4;
-            this.syslogToggleButton.Text = "Start";
-            this.syslogToggleButton.UseVisualStyleBackColor = true;
-            this.syslogToggleButton.Click += new System.EventHandler(this.syslogToggleButton_Click);
+            this.srcAddrLabel.AutoSize = true;
+            this.srcAddrLabel.Location = new System.Drawing.Point(139, 59);
+            this.srcAddrLabel.Name = "srcAddrLabel";
+            this.srcAddrLabel.Size = new System.Drawing.Size(108, 16);
+            this.srcAddrLabel.TabIndex = 1;
+            this.srcAddrLabel.Text = "Client IP address";
+            // 
+            // srcAddrTextBox
+            // 
+            this.srcAddrTextBox.Location = new System.Drawing.Point(253, 56);
+            this.srcAddrTextBox.Name = "srcAddrTextBox";
+            this.srcAddrTextBox.Size = new System.Drawing.Size(171, 22);
+            this.srcAddrTextBox.TabIndex = 0;
+            this.srcAddrTextBox.TextChanged += new System.EventHandler(this.ipAddrTextBox_TextChanged);
+            // 
+            // dataGridViewAcl
+            // 
+            this.dataGridViewAcl.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dataGridViewAcl.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.dataGridViewAcl.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewAcl.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
+            this.dataGridViewAcl.Location = new System.Drawing.Point(12, 646);
+            this.dataGridViewAcl.Name = "dataGridViewAcl";
+            this.dataGridViewAcl.RowHeadersWidth = 51;
+            this.dataGridViewAcl.RowTemplate.Height = 24;
+            this.dataGridViewAcl.Size = new System.Drawing.Size(1138, 164);
+            this.dataGridViewAcl.TabIndex = 18;
+            this.dataGridViewAcl.SelectionChanged += new System.EventHandler(this.dataGridViewAcl_SelectionChanged);
+            // 
+            // aclAddButton
+            // 
+            this.aclAddButton.Location = new System.Drawing.Point(248, 816);
+            this.aclAddButton.Name = "aclAddButton";
+            this.aclAddButton.Size = new System.Drawing.Size(214, 34);
+            this.aclAddButton.TabIndex = 19;
+            this.aclAddButton.Text = "Add";
+            this.aclAddButton.UseVisualStyleBackColor = true;
+            this.aclAddButton.Click += new System.EventHandler(this.aclAddButton_Click);
+            // 
+            // aclRemoveButton
+            // 
+            this.aclRemoveButton.Enabled = false;
+            this.aclRemoveButton.Location = new System.Drawing.Point(468, 816);
+            this.aclRemoveButton.Name = "aclRemoveButton";
+            this.aclRemoveButton.Size = new System.Drawing.Size(214, 34);
+            this.aclRemoveButton.TabIndex = 20;
+            this.aclRemoveButton.Text = "Remove";
+            this.aclRemoveButton.UseVisualStyleBackColor = true;
+            this.aclRemoveButton.Click += new System.EventHandler(this.aclRemoveButton_Click);
+            // 
+            // aclClearButton
+            // 
+            this.aclClearButton.Location = new System.Drawing.Point(688, 816);
+            this.aclClearButton.Name = "aclClearButton";
+            this.aclClearButton.Size = new System.Drawing.Size(214, 34);
+            this.aclClearButton.TabIndex = 21;
+            this.aclClearButton.Text = "Clear";
+            this.aclClearButton.UseVisualStyleBackColor = true;
+            this.aclClearButton.Click += new System.EventHandler(this.aclClearButton_Click);
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(1162, 770);
+            this.ClientSize = new System.Drawing.Size(1162, 862);
+            this.Controls.Add(this.aclClearButton);
+            this.Controls.Add(this.aclRemoveButton);
+            this.Controls.Add(this.aclAddButton);
+            this.Controls.Add(this.dataGridViewAcl);
             this.Controls.Add(this.syslogGroupBox);
             this.Controls.Add(this.ifStatsResetButton2);
             this.Controls.Add(this.ifStatsResetButton1);
@@ -353,6 +417,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownTimeout)).EndInit();
             this.syslogGroupBox.ResumeLayout(false);
             this.syslogGroupBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridViewAcl)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -383,6 +448,10 @@
         private System.Windows.Forms.Label dstAddrLabel;
         private System.Windows.Forms.TextBox dstAddrTextBox;
         private System.Windows.Forms.Button syslogToggleButton;
+        private System.Windows.Forms.DataGridView dataGridViewAcl;
+        private System.Windows.Forms.Button aclAddButton;
+        private System.Windows.Forms.Button aclRemoveButton;
+        private System.Windows.Forms.Button aclClearButton;
     }
 }
 

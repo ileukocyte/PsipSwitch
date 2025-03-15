@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Security.Cryptography;
@@ -17,7 +18,7 @@ using SharpPcap;
 
 namespace PsipSwitch {
     public partial class MainWindow : Form {
-        private const short DeviceTimeoutSeconds = 15;
+        private const short DeviceTimeoutSeconds = 10;
 
         private static readonly PhysicalAddress BroadcastMac = PhysicalAddress.Parse("FF-FF-FF-FF-FF-FF");
 
@@ -30,6 +31,8 @@ namespace PsipSwitch {
 
         private readonly ConcurrentDictionary<PhysicalAddress, MacAddressTableEntry> macAddressTable = new();
 
+        internal readonly List<AccessControlListRule> aclTable = [];
+
         private readonly BindingSource bindingSourceIn1 = [];
         private readonly BindingSource bindingSourceIn2 = [];
         private readonly BindingSource bindingSourceOut1 = [];
@@ -37,10 +40,12 @@ namespace PsipSwitch {
 
         private readonly BindingSource bindingSourceMac = [];
 
+        internal readonly BindingSource bindingSourceAcl = [];
+
         private readonly CaptureDeviceList devices = CaptureDeviceList.Instance;
 
-        private ILiveDevice Device1 { get; set; }
-        private ILiveDevice Device2 { get; set; }
+        internal ILiveDevice Device1 { get; set; }
+        internal ILiveDevice Device2 { get; set; }
 
         private readonly ConcurrentDictionary<ILiveDevice, System.Threading.Timer> deviceTimers = [];
 
@@ -76,6 +81,10 @@ namespace PsipSwitch {
             dataGridViewMac.AutoGenerateColumns = true;
             dataGridViewMac.DataSource = bindingSourceMac;
             await Task.Run(() => RefreshMacGrid(macAddressTable, bindingSourceMac));
+
+            dataGridViewAcl.AutoGenerateColumns = true;
+            dataGridViewAcl.DataSource = bindingSourceAcl;
+            await Task.Run(() => RefreshAclGrid(aclTable, bindingSourceAcl));
         }
 
         private void RefreshProtocolGrid(ConcurrentDictionary<Protocol, long> stats, BindingSource bindingSource) {
@@ -104,11 +113,28 @@ namespace PsipSwitch {
             } else {
                 var list = macTable.Select(kv => new GuiMacAddressTableRecord {
                     MacAddress = FormatMacAddress(kv.Key),
-                    Port = (byte) (kv.Value.Port.MacAddress == Device1.MacAddress ? 1 : 2),
+                    Interface = (byte) (kv.Value.Interface.MacAddress == Device1.MacAddress ? 1 : 2),
                     LifetimeSeconds = kv.Value.LifetimeSeconds,
                 }).ToList();
 
                 bindingSource.DataSource = new BindingList<GuiMacAddressTableRecord>(list);
+            }
+        }
+
+        internal void RefreshAclGrid(
+            List<AccessControlListRule> aclTable,
+            BindingSource bindingSource
+        ) {
+            if (InvokeRequired) {
+                Invoke(
+                    new Action<List<AccessControlListRule>, BindingSource>(RefreshAclGrid),
+                    aclTable,
+                    bindingSource
+                );
+            } else {
+                var list = aclTable.Select(r => GuiAclRule.FromAccessControlListRule(r)).ToList();
+
+                bindingSource.DataSource = new BindingList<GuiAclRule>(list);
             }
         }
 
@@ -147,8 +173,12 @@ namespace PsipSwitch {
                     var record = guiData.First(r => r.MacAddress == FormatMacAddress(sourceMac));
                     var port = (byte) (device.MacAddress == Device1.MacAddress ? 1 : 2);
 
-                    if (port != record.Port) {
+                    if (port != record.Interface) {
                         (Device2, Device1) = (Device1, Device2);
+
+                        if (SyslogEnabled) {
+                            Syslog.Log($"MAC {FormatMacAddress(sourceMac)} port swap ({record.Interface} -> {port}) detected", SyslogSeverity.Notice, Device1, Device2);
+                        }
                     }
                 }
 
@@ -156,6 +186,10 @@ namespace PsipSwitch {
                 timer = entry.Timer;
                 timer.Change(TimeSpan.FromSeconds(timeout), Timeout.InfiniteTimeSpan);
             } else {
+                if (SyslogEnabled) {
+                    Syslog.Log($"MAC {FormatMacAddress(sourceMac)} learned", SyslogSeverity.Debug, Device1, Device2);
+                }
+
                 timer = new System.Threading.Timer(new TimerCallback((state) => {
                     var mac = (PhysicalAddress) state;
                     macAddressTable.TryRemove(mac, out _);
@@ -166,14 +200,22 @@ namespace PsipSwitch {
             macAddressTable.AddOrUpdate(
                 sourceMac,
                 new MacAddressTableEntry {
-                    Port = device,
+                    Interface = device,
                     LifetimeSeconds = timeout,
                     Timer = timer
                 },
-                (_, _) => new MacAddressTableEntry {
-                    Port = device,
-                    LifetimeSeconds = timeout,
-                    Timer = timer
+                (_, _) => {
+                    if (SyslogEnabled) {
+                        if (macAddressTable[sourceMac].Interface.MacAddress != device.MacAddress) {
+                            Syslog.Log($"MAC {FormatMacAddress(sourceMac)} port updated", SyslogSeverity.Informational, Device1, Device2);
+                        }
+                    }
+
+                    return new MacAddressTableEntry {
+                        Interface = device,
+                        LifetimeSeconds = timeout,
+                        Timer = timer
+                    };
                 }
             );
 
@@ -182,7 +224,7 @@ namespace PsipSwitch {
             var srcRecord = macAddressTable[sourceMac];
 
             if (destMac.Equals(BroadcastMac) || !macAddressTable.ContainsKey(destMac)) {
-                if (srcRecord.Port.MacAddress == Device1.MacAddress) {
+                if (srcRecord.Interface.MacAddress == Device1.MacAddress) {
                     try {
                         Device2.SendPacket(rawPacket.Data);
                         NetworkStats.UpdateStats(out1, rawPacket);
@@ -203,11 +245,11 @@ namespace PsipSwitch {
 
             var destRecord = macAddressTable[destMac];
 
-            if (destRecord.Port.MacAddress == srcRecord.Port.MacAddress) {
+            if (destRecord.Interface.MacAddress == srcRecord.Interface.MacAddress) {
                 return;
             }
 
-            if (destRecord.Port.MacAddress == Device1.MacAddress) {
+            if (destRecord.Interface.MacAddress == Device1.MacAddress) {
                 try {
                     Device1.SendPacket(rawPacket.Data);
                     NetworkStats.UpdateStats(out2, rawPacket);
@@ -254,8 +296,8 @@ namespace PsipSwitch {
             Device1.OnPacketArrival += new PacketArrivalEventHandler(switchDevice_OnPacketArrival);
             Device2.OnPacketArrival += new PacketArrivalEventHandler(switchDevice_OnPacketArrival);
 
-            Device1.Open(DeviceModes.Promiscuous | DeviceModes.NoCaptureLocal | DeviceModes.MaxResponsiveness, 1000);
-            Device2.Open(DeviceModes.Promiscuous | DeviceModes.NoCaptureLocal | DeviceModes.MaxResponsiveness, 1000);
+            Device1.Open(DeviceModes.Promiscuous | DeviceModes.NoCaptureLocal | DeviceModes.MaxResponsiveness, DeviceTimeoutSeconds * 1000);
+            Device2.Open(DeviceModes.Promiscuous | DeviceModes.NoCaptureLocal | DeviceModes.MaxResponsiveness, DeviceTimeoutSeconds * 1000);
 
             Device1.StartCapture();
             Device2.StartCapture();
@@ -306,6 +348,10 @@ namespace PsipSwitch {
 
         private void ResetStats(bool resetDevice1 = true, bool resetDevice2 = true) {
             if (resetDevice1) {
+                if (SyslogEnabled) {
+                    Syslog.Log($"Interface 1 ({Device1.Description}) statistics reset", SyslogSeverity.Debug, Device1, Device2);
+                }
+
                 NetworkStats.Reset(in1);
                 RefreshProtocolGrid(in1, bindingSourceIn1);
 
@@ -314,6 +360,10 @@ namespace PsipSwitch {
             }
 
             if (resetDevice2) {
+                if (SyslogEnabled) {
+                    Syslog.Log($"Interface 2 ({Device2.Description}) statistics reset", SyslogSeverity.Debug, Device1, Device2);
+                }
+
                 NetworkStats.Reset(in2);
                 RefreshProtocolGrid(in2, bindingSourceIn2);
 
@@ -368,13 +418,17 @@ namespace PsipSwitch {
         }
 
         public static string FormatMacAddress(PhysicalAddress mac) {
-            return string.Join("-", mac.GetAddressBytes().Select(b => b.ToString("X2")));
+            return string.Join(":", mac.GetAddressBytes().Select(b => b.ToString("X2")));
         }
 
         private void clearMacTableButton_Click(object sender, EventArgs e) {
             Parallel.ForEach(macAddressTable, kv => kv.Value.Timer.Dispose());
             macAddressTable.Clear();
             RefreshMacGrid(macAddressTable, bindingSourceMac);
+
+            if (SyslogEnabled && IsRunning) {
+                Syslog.Log("MAC table cleared", SyslogSeverity.Informational, Device1, Device2);
+            }
         }
 
         private void numericUpDownTimeout_ValueChanged(object sender, EventArgs e) {
@@ -390,6 +444,10 @@ namespace PsipSwitch {
                 entry.Timer.Change(TimeSpan.FromSeconds(value), Timeout.InfiniteTimeSpan);
 
                 macAddressTable[kv.Key] = entry;
+
+                if (SyslogEnabled) {
+                    Syslog.Log($"MAC {FormatMacAddress(kv.Key)} timeout updated to {value}s", SyslogSeverity.Debug, Device1, Device2);
+                }
             });
         }
 
@@ -413,6 +471,54 @@ namespace PsipSwitch {
             } else {
                 syslogToggleButton.Text = "Start";
             }
+        }
+
+        private void ipAddrTextBox_TextChanged(object sender, EventArgs e) {
+            if (IPAddress.TryParse(srcAddrTextBox.Text, out Syslog.ClientAddress) && IPAddress.TryParse(dstAddrTextBox.Text, out Syslog.ServerAddress)) {
+                syslogToggleButton.Enabled = true;
+
+                return;
+            }
+
+            syslogToggleButton.Enabled = false;
+        }
+
+        private void aclAddButton_Click(object sender, EventArgs e) {
+            using var form = new AddAclRuleWindow();
+
+            AddOwnedForm(form);
+
+            form.ShowDialog();
+        }
+
+        private void aclRemoveButton_Click(object sender, EventArgs e) {
+            var selectedRow = dataGridViewAcl.SelectedRows[0];
+
+            lock (_lock) {
+                aclTable.RemoveAt(selectedRow.Index);
+                RefreshAclGrid(aclTable, bindingSourceAcl);
+            }
+        }
+
+        private void aclClearButton_Click(object sender, EventArgs e) {
+            lock (_lock) {
+                aclTable.Clear();
+                RefreshAclGrid(aclTable, bindingSourceAcl);
+            }
+
+            if (SyslogEnabled && IsRunning) {
+                Syslog.Log("ACL table cleared", SyslogSeverity.Informational, Device1, Device2);
+            }
+        }
+
+        private void dataGridViewAcl_SelectionChanged(object sender, EventArgs e) {
+            if (dataGridViewAcl.SelectedRows.Count != 1) {
+                aclRemoveButton.Enabled = false;
+
+                return;
+            }
+
+            aclRemoveButton.Enabled = true;
         }
     }
 }
