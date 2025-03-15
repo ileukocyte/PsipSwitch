@@ -1,14 +1,11 @@
-﻿using PacketDotNet;
-using SharpPcap;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+
+using PacketDotNet;
+using SharpPcap;
 
 namespace PsipSwitch {
     public enum AccessControlListAction {
@@ -59,23 +56,64 @@ namespace PsipSwitch {
         public byte Interface { get; set; }
         public ICMPType ICMPType { get; set; }
 
-        public static bool AnalyzePacket(
-            PacketCapture capture,
+        public static (bool, AccessControlListDirection) AnalyzePacket(
+            RawCapture rawPacket,
             byte interfaceIndex,
             List<AccessControlListRule> aclTable
         ) {
-            var rawPacket = capture.GetPacket();
             var packet = Packet.ParsePacket(rawPacket.LinkLayerType, rawPacket.Data);
 
             foreach (var rule in aclTable) {
-                // TODO
+                var ethPacket = packet.Extract<EthernetPacket>();
+                var ipPacket = packet.Extract<IPv4Packet>();
+                var tcpPacket = packet.Extract<TcpPacket>();
+                var udpPacket = packet.Extract<UdpPacket>();
+                var icmpPacket = packet.Extract<IcmpV4Packet>();
+
+                var interfaceMatch = rule.Interface == interfaceIndex;
+                var protocolMatch = rule.Protocol switch {
+                    AccessControlListProtocol.TCP => tcpPacket != null,
+                    AccessControlListProtocol.UDP => udpPacket != null,
+                    AccessControlListProtocol.ICMP => icmpPacket != null,
+                    _ => true,
+                };
+                var srcMacMatch = rule.SourceMacAddress == null
+                    || rule.SourceMacAddress.Equals(ethPacket.SourceHardwareAddress);
+                var dstMacMatch = rule.DestinationMacAddress == null
+                    || rule.DestinationMacAddress.Equals(ethPacket.DestinationHardwareAddress);
+                var srcIpMatch = rule.SourceIpV4Address == null
+                    || (ipPacket != null && ipPacket.SourceAddress.Equals(rule.SourceIpV4Address));
+                var dstIpMatch = rule.DestinationIpV4Address == null
+                    || (ipPacket != null && ipPacket.DestinationAddress.Equals(rule.DestinationIpV4Address));
+                var srcPortMatch = rule.SourcePort == 0
+                    || (tcpPacket != null && tcpPacket.SourcePort == rule.SourcePort)
+                    || (udpPacket != null && udpPacket.SourcePort == rule.SourcePort);
+                var dstPortMatch = rule.DestinationPort == 0
+                    || (tcpPacket != null && tcpPacket.DestinationPort == rule.DestinationPort)
+                    || (udpPacket != null && udpPacket.DestinationPort == rule.DestinationPort);
+                var icmpMatch = icmpPacket != null
+                    && (rule.ICMPType == ICMPType.Any || (byte) rule.ICMPType == icmpPacket.HeaderData[0]);
+
+                var match = interfaceMatch && protocolMatch
+                    && srcMacMatch && dstMacMatch
+                    && srcIpMatch && dstIpMatch
+                    && (
+                        rule.Protocol == AccessControlListProtocol.Any
+                        || ((rule.Protocol == AccessControlListProtocol.TCP || rule.Protocol == AccessControlListProtocol.UDP) && srcPortMatch && dstPortMatch)
+                        || (rule.Protocol == AccessControlListProtocol.ICMP && icmpMatch)
+                    );
+
+                if (match) {
+                    return (rule.Action == AccessControlListAction.Permit, rule.Direction);
+                }
             }
 
-            return true;
+            return (true, AccessControlListDirection.Outbound);
         }
     }
 
     public struct GuiAclRule {
+        [DisplayName("ACL Action")]
         public string Action { get; set; }
         public string Direction { get; set; }
         public byte Interface { get; set; }

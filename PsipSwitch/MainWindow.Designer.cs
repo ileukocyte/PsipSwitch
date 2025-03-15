@@ -50,6 +50,9 @@
             this.aclAddButton = new System.Windows.Forms.Button();
             this.aclRemoveButton = new System.Windows.Forms.Button();
             this.aclClearButton = new System.Windows.Forms.Button();
+            this.timeoutLabel = new System.Windows.Forms.Label();
+            this.interfaceLabel1 = new System.Windows.Forms.Label();
+            this.interfaceLabel2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewOut1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewIn2)).BeginInit();
@@ -98,6 +101,7 @@
             this.dataGridViewIn1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewIn1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewIn1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewIn1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridViewIn1.Location = new System.Drawing.Point(12, 70);
             this.dataGridViewIn1.Name = "dataGridViewIn1";
             this.dataGridViewIn1.ReadOnly = true;
@@ -114,6 +118,7 @@
             this.dataGridViewOut1.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewOut1.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewOut1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewOut1.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridViewOut1.Location = new System.Drawing.Point(12, 343);
             this.dataGridViewOut1.Name = "dataGridViewOut1";
             this.dataGridViewOut1.ReadOnly = true;
@@ -130,6 +135,7 @@
             this.dataGridViewIn2.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewIn2.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewIn2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewIn2.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridViewIn2.Location = new System.Drawing.Point(887, 70);
             this.dataGridViewIn2.Name = "dataGridViewIn2";
             this.dataGridViewIn2.ReadOnly = true;
@@ -146,6 +152,7 @@
             this.dataGridViewOut2.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewOut2.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewOut2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewOut2.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridViewOut2.Location = new System.Drawing.Point(887, 343);
             this.dataGridViewOut2.Name = "dataGridViewOut2";
             this.dataGridViewOut2.ReadOnly = true;
@@ -159,44 +166,44 @@
             // 
             this.labelIn1.AutoSize = true;
             this.labelIn1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelIn1.Location = new System.Drawing.Point(68, 289);
+            this.labelIn1.Location = new System.Drawing.Point(101, 289);
             this.labelIn1.Name = "labelIn1";
-            this.labelIn1.Size = new System.Drawing.Size(155, 16);
+            this.labelIn1.Size = new System.Drawing.Size(69, 16);
             this.labelIn1.TabIndex = 7;
-            this.labelIn1.Text = "Incoming (Interface 1)";
+            this.labelIn1.Text = "Incoming";
             this.labelIn1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // labelOut1
             // 
             this.labelOut1.AutoSize = true;
             this.labelOut1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelOut1.Location = new System.Drawing.Point(68, 562);
+            this.labelOut1.Location = new System.Drawing.Point(101, 562);
             this.labelOut1.Name = "labelOut1";
-            this.labelOut1.Size = new System.Drawing.Size(155, 16);
+            this.labelOut1.Size = new System.Drawing.Size(69, 16);
             this.labelOut1.TabIndex = 8;
-            this.labelOut1.Text = "Outgoing (Interface 1)";
+            this.labelOut1.Text = "Outgoing";
             this.labelOut1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // labelIn2
             // 
             this.labelIn2.AutoSize = true;
             this.labelIn2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelIn2.Location = new System.Drawing.Point(944, 289);
+            this.labelIn2.Location = new System.Drawing.Point(987, 289);
             this.labelIn2.Name = "labelIn2";
-            this.labelIn2.Size = new System.Drawing.Size(155, 16);
+            this.labelIn2.Size = new System.Drawing.Size(69, 16);
             this.labelIn2.TabIndex = 9;
-            this.labelIn2.Text = "Incoming (Interface 2)";
+            this.labelIn2.Text = "Incoming";
             this.labelIn2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // labelOut2
             // 
             this.labelOut2.AutoSize = true;
             this.labelOut2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.labelOut2.Location = new System.Drawing.Point(944, 562);
+            this.labelOut2.Location = new System.Drawing.Point(987, 562);
             this.labelOut2.Name = "labelOut2";
-            this.labelOut2.Size = new System.Drawing.Size(155, 16);
+            this.labelOut2.Size = new System.Drawing.Size(69, 16);
             this.labelOut2.TabIndex = 10;
-            this.labelOut2.Text = "Outgoing (Interface 2)";
+            this.labelOut2.Text = "Outgoing";
             this.labelOut2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // refreshButton
@@ -214,6 +221,7 @@
             this.dataGridViewMac.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewMac.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.dataGridViewMac.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridViewMac.EditMode = System.Windows.Forms.DataGridViewEditMode.EditProgrammatically;
             this.dataGridViewMac.Location = new System.Drawing.Point(281, 70);
             this.dataGridViewMac.Name = "dataGridViewMac";
             this.dataGridViewMac.RowHeadersVisible = false;
@@ -374,12 +382,46 @@
             this.aclClearButton.UseVisualStyleBackColor = true;
             this.aclClearButton.Click += new System.EventHandler(this.aclClearButton_Click);
             // 
+            // timeoutLabel
+            // 
+            this.timeoutLabel.AutoSize = true;
+            this.timeoutLabel.Location = new System.Drawing.Point(585, 301);
+            this.timeoutLabel.Name = "timeoutLabel";
+            this.timeoutLabel.Size = new System.Drawing.Size(60, 16);
+            this.timeoutLabel.TabIndex = 22;
+            this.timeoutLabel.Text = "Timer (s)";
+            // 
+            // interfaceLabel1
+            // 
+            this.interfaceLabel1.AutoSize = true;
+            this.interfaceLabel1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.interfaceLabel1.Location = new System.Drawing.Point(101, 9);
+            this.interfaceLabel1.Name = "interfaceLabel1";
+            this.interfaceLabel1.Size = new System.Drawing.Size(79, 16);
+            this.interfaceLabel1.TabIndex = 23;
+            this.interfaceLabel1.Text = "Interface 1";
+            this.interfaceLabel1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // interfaceLabel2
+            // 
+            this.interfaceLabel2.AutoSize = true;
+            this.interfaceLabel2.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.interfaceLabel2.Location = new System.Drawing.Point(987, 9);
+            this.interfaceLabel2.Name = "interfaceLabel2";
+            this.interfaceLabel2.Size = new System.Drawing.Size(79, 16);
+            this.interfaceLabel2.TabIndex = 24;
+            this.interfaceLabel2.Text = "Interface 2";
+            this.interfaceLabel2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(1162, 862);
+            this.Controls.Add(this.interfaceLabel2);
+            this.Controls.Add(this.interfaceLabel1);
+            this.Controls.Add(this.timeoutLabel);
             this.Controls.Add(this.aclClearButton);
             this.Controls.Add(this.aclRemoveButton);
             this.Controls.Add(this.aclAddButton);
@@ -452,6 +494,9 @@
         private System.Windows.Forms.Button aclAddButton;
         private System.Windows.Forms.Button aclRemoveButton;
         private System.Windows.Forms.Button aclClearButton;
+        private System.Windows.Forms.Label timeoutLabel;
+        private System.Windows.Forms.Label interfaceLabel1;
+        private System.Windows.Forms.Label interfaceLabel2;
     }
 }
 

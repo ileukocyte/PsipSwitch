@@ -106,7 +106,7 @@ namespace PsipSwitch {
                 };
 
                 device2.SendPacket(ethernetPacket);
-            } catch (Exception) {
+            } catch {
             }
         }
     }

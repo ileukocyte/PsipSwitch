@@ -1,17 +1,14 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Threading;
-using System.Security.Cryptography;
-using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 using PacketDotNet;
 using SharpPcap;
@@ -113,7 +110,7 @@ namespace PsipSwitch {
             } else {
                 var list = macTable.Select(kv => new GuiMacAddressTableRecord {
                     MacAddress = FormatMacAddress(kv.Key),
-                    Interface = (byte) (kv.Value.Interface.MacAddress == Device1.MacAddress ? 1 : 2),
+                    Interface = (byte) (kv.Value.Interface.MacAddress.Equals(Device1.MacAddress) ? 1 : 2),
                     LifetimeSeconds = kv.Value.LifetimeSeconds,
                 }).ToList();
 
@@ -149,7 +146,14 @@ namespace PsipSwitch {
                 return;
             }
 
-            if (device.MacAddress == Device1.MacAddress) {
+            var (allowed, direction) = AccessControlListRule
+                .AnalyzePacket(rawPacket, (byte) (device == Device1 ? 1 : 2), aclTable);
+
+            if (!allowed && direction == AccessControlListDirection.Inbound) {
+                return;
+            }
+
+            if (device.MacAddress.Equals(Device1.MacAddress)) {
                 NetworkStats.UpdateStats(in1, rawPacket);
                 RefreshProtocolGrid(in1, bindingSourceIn1);
             } else {
@@ -171,7 +175,7 @@ namespace PsipSwitch {
                 lock (_lock) {
                     var guiData = (BindingList<GuiMacAddressTableRecord>) bindingSourceMac.DataSource;
                     var record = guiData.First(r => r.MacAddress == FormatMacAddress(sourceMac));
-                    var port = (byte) (device.MacAddress == Device1.MacAddress ? 1 : 2);
+                    var port = (byte) (device.MacAddress.Equals(Device1.MacAddress) ? 1 : 2);
 
                     if (port != record.Interface) {
                         (Device2, Device1) = (Device1, Device2);
@@ -221,22 +225,26 @@ namespace PsipSwitch {
 
             RefreshMacGrid(macAddressTable, bindingSourceMac);
 
+            if (!allowed && direction == AccessControlListDirection.Outbound) {
+                return;
+            }
+
             var srcRecord = macAddressTable[sourceMac];
 
             if (destMac.Equals(BroadcastMac) || !macAddressTable.ContainsKey(destMac)) {
-                if (srcRecord.Interface.MacAddress == Device1.MacAddress) {
+                if (srcRecord.Interface.MacAddress.Equals(Device1.MacAddress)) {
                     try {
                         Device2.SendPacket(rawPacket.Data);
                         NetworkStats.UpdateStats(out1, rawPacket);
                         RefreshProtocolGrid(out1, bindingSourceOut1);
-                    } catch (Exception) {
+                    } catch {
                     }
                 } else {
                     try {
                         Device1.SendPacket(rawPacket.Data);
                         NetworkStats.UpdateStats(out2, rawPacket);
                         RefreshProtocolGrid(out2, bindingSourceOut2);
-                    } catch (Exception) {
+                    } catch {
                     }
                 }
 
@@ -245,23 +253,23 @@ namespace PsipSwitch {
 
             var destRecord = macAddressTable[destMac];
 
-            if (destRecord.Interface.MacAddress == srcRecord.Interface.MacAddress) {
+            if (destRecord.Interface.MacAddress.Equals(srcRecord.Interface.MacAddress)) {
                 return;
             }
 
-            if (destRecord.Interface.MacAddress == Device1.MacAddress) {
+            if (destRecord.Interface.MacAddress.Equals(Device1.MacAddress)) {
                 try {
                     Device1.SendPacket(rawPacket.Data);
                     NetworkStats.UpdateStats(out2, rawPacket);
                     RefreshProtocolGrid(out2, bindingSourceOut2);
-                } catch (Exception) {
+                } catch {
                 }
             } else {
                 try {
                     Device2.SendPacket(rawPacket.Data);
                     NetworkStats.UpdateStats(out1, rawPacket);
                     RefreshProtocolGrid(out1, bindingSourceOut1);
-                } catch (Exception) {
+                } catch {
                 }
             }
         }
