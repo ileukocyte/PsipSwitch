@@ -28,7 +28,7 @@ namespace PsipSwitch {
 
         private readonly ConcurrentDictionary<PhysicalAddress, MacAddressTableEntry> macAddressTable = new();
 
-        internal readonly List<AccessControlListRule> aclTable = [];
+        internal readonly List<AccessControlEntry> aceTable = [];
 
         private readonly BindingSource bindingSourceIn1 = [];
         private readonly BindingSource bindingSourceIn2 = [];
@@ -81,19 +81,19 @@ namespace PsipSwitch {
 
             dataGridViewAcl.AutoGenerateColumns = true;
             dataGridViewAcl.DataSource = bindingSourceAcl;
-            await Task.Run(() => RefreshAclGrid(aclTable, bindingSourceAcl));
+            await Task.Run(() => RefreshAclGrid(aceTable, bindingSourceAcl));
         }
 
         private void RefreshProtocolGrid(ConcurrentDictionary<Protocol, long> stats, BindingSource bindingSource) {
             if (InvokeRequired) {
                 Invoke(new Action<ConcurrentDictionary<Protocol, long>, BindingSource>(RefreshProtocolGrid), stats, bindingSource);
             } else {
-                var list = stats.Select(kv => new GuiProtocolStat {
+                var list = stats.Select(kv => new GuiProtocolStatsEntry {
                     Protocol = kv.Key.GetName(),
                     Count = kv.Value
                 }).ToList();
 
-                bindingSource.DataSource = new BindingList<GuiProtocolStat>(list);
+                bindingSource.DataSource = new BindingList<GuiProtocolStatsEntry>(list);
             }
         }
 
@@ -108,30 +108,30 @@ namespace PsipSwitch {
                     bindingSource
                 );
             } else {
-                var list = macTable.Select(kv => new GuiMacAddressTableRecord {
+                var list = macTable.Select(kv => new GuiMacAddressTableEntry {
                     MacAddress = FormatMacAddress(kv.Key),
                     Interface = (byte) (kv.Value.Interface.MacAddress.Equals(Device1.MacAddress) ? 1 : 2),
                     LifetimeSeconds = kv.Value.LifetimeSeconds,
                 }).ToList();
 
-                bindingSource.DataSource = new BindingList<GuiMacAddressTableRecord>(list);
+                bindingSource.DataSource = new BindingList<GuiMacAddressTableEntry>(list);
             }
         }
 
         internal void RefreshAclGrid(
-            List<AccessControlListRule> aclTable,
+            List<AccessControlEntry> aclTable,
             BindingSource bindingSource
         ) {
             if (InvokeRequired) {
                 Invoke(
-                    new Action<List<AccessControlListRule>, BindingSource>(RefreshAclGrid),
+                    new Action<List<AccessControlEntry>, BindingSource>(RefreshAclGrid),
                     aclTable,
                     bindingSource
                 );
             } else {
-                var list = aclTable.Select(r => GuiAclRule.FromAccessControlListRule(r)).ToList();
+                var list = aclTable.Select(r => GuiAccessControlEntry.FromAccessControlEntry(r)).ToList();
 
-                bindingSource.DataSource = new BindingList<GuiAclRule>(list);
+                bindingSource.DataSource = new BindingList<GuiAccessControlEntry>(list);
             }
         }
 
@@ -146,10 +146,10 @@ namespace PsipSwitch {
                 return;
             }
 
-            var (allowed, direction) = AccessControlListRule
-                .AnalyzePacket(rawPacket, (byte) (device == Device1 ? 1 : 2), aclTable);
+            var (allowed, direction) = AccessControlEntry
+                .AnalyzePacket(rawPacket, (byte) (device == Device1 ? 1 : 2), aceTable);
 
-            if (!allowed && direction == AccessControlListDirection.Inbound) {
+            if (!allowed && direction == AccessControlEntryDirection.Inbound) {
                 return;
             }
 
@@ -173,7 +173,7 @@ namespace PsipSwitch {
 
                 // cable swap
                 lock (_lock) {
-                    var guiData = (BindingList<GuiMacAddressTableRecord>) bindingSourceMac.DataSource;
+                    var guiData = (BindingList<GuiMacAddressTableEntry>) bindingSourceMac.DataSource;
                     var record = guiData.First(r => r.MacAddress == FormatMacAddress(sourceMac));
                     var port = (byte) (device.MacAddress.Equals(Device1.MacAddress) ? 1 : 2);
 
@@ -225,7 +225,7 @@ namespace PsipSwitch {
 
             RefreshMacGrid(macAddressTable, bindingSourceMac);
 
-            if (!allowed && direction == AccessControlListDirection.Outbound) {
+            if (!allowed && direction == AccessControlEntryDirection.Outbound) {
                 return;
             }
 
@@ -491,42 +491,42 @@ namespace PsipSwitch {
             syslogToggleButton.Enabled = false;
         }
 
-        private void aclAddButton_Click(object sender, EventArgs e) {
-            using var form = new AddAclRuleWindow();
+        private void aceAddButton_Click(object sender, EventArgs e) {
+            using var form = new AddAccessControlEntryWindow();
 
             AddOwnedForm(form);
 
             form.ShowDialog();
         }
 
-        private void aclRemoveButton_Click(object sender, EventArgs e) {
+        private void aceRemoveButton_Click(object sender, EventArgs e) {
             var selectedRow = dataGridViewAcl.SelectedRows[0];
 
             lock (_lock) {
-                aclTable.RemoveAt(selectedRow.Index);
-                RefreshAclGrid(aclTable, bindingSourceAcl);
+                aceTable.RemoveAt(selectedRow.Index);
+                RefreshAclGrid(aceTable, bindingSourceAcl);
             }
         }
 
-        private void aclClearButton_Click(object sender, EventArgs e) {
+        private void aceClearButton_Click(object sender, EventArgs e) {
             lock (_lock) {
-                aclTable.Clear();
-                RefreshAclGrid(aclTable, bindingSourceAcl);
+                aceTable.Clear();
+                RefreshAclGrid(aceTable, bindingSourceAcl);
             }
 
             if (SyslogEnabled && IsRunning) {
-                Syslog.Log("ACL table cleared", SyslogSeverity.Informational, Device1, Device2);
+                Syslog.Log("ACE table cleared", SyslogSeverity.Informational, Device1, Device2);
             }
         }
 
         private void dataGridViewAcl_SelectionChanged(object sender, EventArgs e) {
             if (dataGridViewAcl.SelectedRows.Count != 1) {
-                aclRemoveButton.Enabled = false;
+                aceRemoveButton.Enabled = false;
 
                 return;
             }
 
-            aclRemoveButton.Enabled = true;
+            aceRemoveButton.Enabled = true;
         }
     }
 }

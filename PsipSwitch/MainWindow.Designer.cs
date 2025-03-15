@@ -47,9 +47,9 @@
             this.srcAddrLabel = new System.Windows.Forms.Label();
             this.srcAddrTextBox = new System.Windows.Forms.TextBox();
             this.dataGridViewAcl = new System.Windows.Forms.DataGridView();
-            this.aclAddButton = new System.Windows.Forms.Button();
-            this.aclRemoveButton = new System.Windows.Forms.Button();
-            this.aclClearButton = new System.Windows.Forms.Button();
+            this.aceAddButton = new System.Windows.Forms.Button();
+            this.aceRemoveButton = new System.Windows.Forms.Button();
+            this.aceClearButton = new System.Windows.Forms.Button();
             this.timeoutLabel = new System.Windows.Forms.Label();
             this.interfaceLabel1 = new System.Windows.Forms.Label();
             this.interfaceLabel2 = new System.Windows.Forms.Label();
@@ -351,36 +351,36 @@
             this.dataGridViewAcl.TabIndex = 18;
             this.dataGridViewAcl.SelectionChanged += new System.EventHandler(this.dataGridViewAcl_SelectionChanged);
             // 
-            // aclAddButton
+            // aceAddButton
             // 
-            this.aclAddButton.Location = new System.Drawing.Point(248, 816);
-            this.aclAddButton.Name = "aclAddButton";
-            this.aclAddButton.Size = new System.Drawing.Size(214, 34);
-            this.aclAddButton.TabIndex = 19;
-            this.aclAddButton.Text = "Add";
-            this.aclAddButton.UseVisualStyleBackColor = true;
-            this.aclAddButton.Click += new System.EventHandler(this.aclAddButton_Click);
+            this.aceAddButton.Location = new System.Drawing.Point(248, 816);
+            this.aceAddButton.Name = "aceAddButton";
+            this.aceAddButton.Size = new System.Drawing.Size(214, 34);
+            this.aceAddButton.TabIndex = 19;
+            this.aceAddButton.Text = "Add";
+            this.aceAddButton.UseVisualStyleBackColor = true;
+            this.aceAddButton.Click += new System.EventHandler(this.aceAddButton_Click);
             // 
-            // aclRemoveButton
+            // aceRemoveButton
             // 
-            this.aclRemoveButton.Enabled = false;
-            this.aclRemoveButton.Location = new System.Drawing.Point(468, 816);
-            this.aclRemoveButton.Name = "aclRemoveButton";
-            this.aclRemoveButton.Size = new System.Drawing.Size(214, 34);
-            this.aclRemoveButton.TabIndex = 20;
-            this.aclRemoveButton.Text = "Remove";
-            this.aclRemoveButton.UseVisualStyleBackColor = true;
-            this.aclRemoveButton.Click += new System.EventHandler(this.aclRemoveButton_Click);
+            this.aceRemoveButton.Enabled = false;
+            this.aceRemoveButton.Location = new System.Drawing.Point(468, 816);
+            this.aceRemoveButton.Name = "aceRemoveButton";
+            this.aceRemoveButton.Size = new System.Drawing.Size(214, 34);
+            this.aceRemoveButton.TabIndex = 20;
+            this.aceRemoveButton.Text = "Remove";
+            this.aceRemoveButton.UseVisualStyleBackColor = true;
+            this.aceRemoveButton.Click += new System.EventHandler(this.aceRemoveButton_Click);
             // 
-            // aclClearButton
+            // aceClearButton
             // 
-            this.aclClearButton.Location = new System.Drawing.Point(688, 816);
-            this.aclClearButton.Name = "aclClearButton";
-            this.aclClearButton.Size = new System.Drawing.Size(214, 34);
-            this.aclClearButton.TabIndex = 21;
-            this.aclClearButton.Text = "Clear";
-            this.aclClearButton.UseVisualStyleBackColor = true;
-            this.aclClearButton.Click += new System.EventHandler(this.aclClearButton_Click);
+            this.aceClearButton.Location = new System.Drawing.Point(688, 816);
+            this.aceClearButton.Name = "aceClearButton";
+            this.aceClearButton.Size = new System.Drawing.Size(214, 34);
+            this.aceClearButton.TabIndex = 21;
+            this.aceClearButton.Text = "Clear";
+            this.aceClearButton.UseVisualStyleBackColor = true;
+            this.aceClearButton.Click += new System.EventHandler(this.aceClearButton_Click);
             // 
             // timeoutLabel
             // 
@@ -422,9 +422,9 @@
             this.Controls.Add(this.interfaceLabel2);
             this.Controls.Add(this.interfaceLabel1);
             this.Controls.Add(this.timeoutLabel);
-            this.Controls.Add(this.aclClearButton);
-            this.Controls.Add(this.aclRemoveButton);
-            this.Controls.Add(this.aclAddButton);
+            this.Controls.Add(this.aceClearButton);
+            this.Controls.Add(this.aceRemoveButton);
+            this.Controls.Add(this.aceAddButton);
             this.Controls.Add(this.dataGridViewAcl);
             this.Controls.Add(this.syslogGroupBox);
             this.Controls.Add(this.ifStatsResetButton2);
@@ -491,9 +491,9 @@
         private System.Windows.Forms.TextBox dstAddrTextBox;
         private System.Windows.Forms.Button syslogToggleButton;
         private System.Windows.Forms.DataGridView dataGridViewAcl;
-        private System.Windows.Forms.Button aclAddButton;
-        private System.Windows.Forms.Button aclRemoveButton;
-        private System.Windows.Forms.Button aclClearButton;
+        private System.Windows.Forms.Button aceAddButton;
+        private System.Windows.Forms.Button aceRemoveButton;
+        private System.Windows.Forms.Button aceClearButton;
         private System.Windows.Forms.Label timeoutLabel;
         private System.Windows.Forms.Label interfaceLabel1;
         private System.Windows.Forms.Label interfaceLabel2;

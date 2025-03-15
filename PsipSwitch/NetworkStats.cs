@@ -17,7 +17,7 @@ namespace PsipSwitch {
         HTTPS,
     }
 
-    public struct GuiProtocolStat {
+    public struct GuiProtocolStatsEntry {
         public string Protocol { get; set; }
         public long Count { get; set; }
     }

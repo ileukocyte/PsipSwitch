@@ -1,5 +1,5 @@
 ﻿namespace PsipSwitch {
-    partial class AddAclRuleWindow {
+    partial class AddAccessControlEntryWindow {
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -23,7 +23,7 @@
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent() {
-            this.saveAclRuleButton = new System.Windows.Forms.Button();
+            this.saveEntryButton = new System.Windows.Forms.Button();
             this.basicConfigGroupBox = new System.Windows.Forms.GroupBox();
             this.interfaceLabel = new System.Windows.Forms.Label();
             this.interfaceComboBox = new System.Windows.Forms.ComboBox();
@@ -58,16 +58,16 @@
             ((System.ComponentModel.ISupportInitialize)(this.dstPortNumericUpDown)).BeginInit();
             this.SuspendLayout();
             // 
-            // saveAclRuleButton
+            // saveEntryButton
             // 
-            this.saveAclRuleButton.Enabled = false;
-            this.saveAclRuleButton.Location = new System.Drawing.Point(269, 319);
-            this.saveAclRuleButton.Name = "saveAclRuleButton";
-            this.saveAclRuleButton.Size = new System.Drawing.Size(133, 36);
-            this.saveAclRuleButton.TabIndex = 0;
-            this.saveAclRuleButton.Text = "Add";
-            this.saveAclRuleButton.UseVisualStyleBackColor = true;
-            this.saveAclRuleButton.Click += new System.EventHandler(this.saveAclRuleButton_Click);
+            this.saveEntryButton.Enabled = false;
+            this.saveEntryButton.Location = new System.Drawing.Point(269, 319);
+            this.saveEntryButton.Name = "saveEntryButton";
+            this.saveEntryButton.Size = new System.Drawing.Size(133, 36);
+            this.saveEntryButton.TabIndex = 0;
+            this.saveEntryButton.Text = "Add";
+            this.saveEntryButton.UseVisualStyleBackColor = true;
+            this.saveEntryButton.Click += new System.EventHandler(this.saveEntryButton_Click);
             // 
             // basicConfigGroupBox
             // 
@@ -103,7 +103,7 @@
             this.interfaceComboBox.Name = "interfaceComboBox";
             this.interfaceComboBox.Size = new System.Drawing.Size(191, 24);
             this.interfaceComboBox.TabIndex = 6;
-            this.interfaceComboBox.SelectionChangeCommitted += new System.EventHandler(this.inputValidation);
+            this.interfaceComboBox.SelectionChangeCommitted += new System.EventHandler(this.InputValidation);
             // 
             // protocolLabel
             // 
@@ -140,7 +140,7 @@
             this.protocolComboBox.Name = "protocolComboBox";
             this.protocolComboBox.Size = new System.Drawing.Size(191, 24);
             this.protocolComboBox.TabIndex = 2;
-            this.protocolComboBox.SelectionChangeCommitted += new System.EventHandler(this.inputValidation);
+            this.protocolComboBox.SelectionChangeCommitted += new System.EventHandler(this.InputValidation);
             // 
             // directionComboBox
             // 
@@ -150,7 +150,7 @@
             this.directionComboBox.Name = "directionComboBox";
             this.directionComboBox.Size = new System.Drawing.Size(191, 24);
             this.directionComboBox.TabIndex = 1;
-            this.directionComboBox.SelectionChangeCommitted += new System.EventHandler(this.inputValidation);
+            this.directionComboBox.SelectionChangeCommitted += new System.EventHandler(this.InputValidation);
             // 
             // actionComboBox
             // 
@@ -160,7 +160,7 @@
             this.actionComboBox.Name = "actionComboBox";
             this.actionComboBox.Size = new System.Drawing.Size(191, 24);
             this.actionComboBox.TabIndex = 0;
-            this.actionComboBox.SelectionChangeCommitted += new System.EventHandler(this.inputValidation);
+            this.actionComboBox.SelectionChangeCommitted += new System.EventHandler(this.InputValidation);
             // 
             // ipConfigGroupBox
             // 
@@ -181,7 +181,7 @@
             this.srcIpTextBox.Name = "srcIpTextBox";
             this.srcIpTextBox.Size = new System.Drawing.Size(168, 22);
             this.srcIpTextBox.TabIndex = 13;
-            this.srcIpTextBox.TextChanged += new System.EventHandler(this.inputValidation);
+            this.srcIpTextBox.TextChanged += new System.EventHandler(this.InputValidation);
             // 
             // dstIpTextBox
             // 
@@ -189,7 +189,7 @@
             this.dstIpTextBox.Name = "dstIpTextBox";
             this.dstIpTextBox.Size = new System.Drawing.Size(168, 22);
             this.dstIpTextBox.TabIndex = 12;
-            this.dstIpTextBox.TextChanged += new System.EventHandler(this.inputValidation);
+            this.dstIpTextBox.TextChanged += new System.EventHandler(this.InputValidation);
             // 
             // dstIpLabel
             // 
@@ -228,7 +228,7 @@
             this.srcMacTextBox.Name = "srcMacTextBox";
             this.srcMacTextBox.Size = new System.Drawing.Size(168, 22);
             this.srcMacTextBox.TabIndex = 17;
-            this.srcMacTextBox.TextChanged += new System.EventHandler(this.inputValidation);
+            this.srcMacTextBox.TextChanged += new System.EventHandler(this.InputValidation);
             // 
             // srcMacLabel
             // 
@@ -245,7 +245,7 @@
             this.dstMacTextBox.Name = "dstMacTextBox";
             this.dstMacTextBox.Size = new System.Drawing.Size(168, 22);
             this.dstMacTextBox.TabIndex = 16;
-            this.dstMacTextBox.TextChanged += new System.EventHandler(this.inputValidation);
+            this.dstMacTextBox.TextChanged += new System.EventHandler(this.InputValidation);
             // 
             // dstMacLabel
             // 
@@ -279,7 +279,7 @@
             this.icmpComboBox.Name = "icmpComboBox";
             this.icmpComboBox.Size = new System.Drawing.Size(121, 24);
             this.icmpComboBox.TabIndex = 19;
-            this.icmpComboBox.SelectionChangeCommitted += new System.EventHandler(this.inputValidation);
+            this.icmpComboBox.SelectionChangeCommitted += new System.EventHandler(this.InputValidation);
             // 
             // icmpLabel
             // 
@@ -301,7 +301,7 @@
             this.srcPortNumericUpDown.Name = "srcPortNumericUpDown";
             this.srcPortNumericUpDown.Size = new System.Drawing.Size(96, 22);
             this.srcPortNumericUpDown.TabIndex = 17;
-            this.srcPortNumericUpDown.ValueChanged += new System.EventHandler(this.inputValidation);
+            this.srcPortNumericUpDown.ValueChanged += new System.EventHandler(this.InputValidation);
             // 
             // dstPortNumericUpDown
             // 
@@ -314,7 +314,7 @@
             this.dstPortNumericUpDown.Name = "dstPortNumericUpDown";
             this.dstPortNumericUpDown.Size = new System.Drawing.Size(96, 22);
             this.dstPortNumericUpDown.TabIndex = 16;
-            this.dstPortNumericUpDown.ValueChanged += new System.EventHandler(this.inputValidation);
+            this.dstPortNumericUpDown.ValueChanged += new System.EventHandler(this.InputValidation);
             // 
             // dstPortLabel
             // 
@@ -334,7 +334,7 @@
             this.srcPortLabel.TabIndex = 14;
             this.srcPortLabel.Text = "Source Port";
             // 
-            // AddAclRuleWindow
+            // AddAccessControlEntryWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -343,15 +343,15 @@
             this.Controls.Add(this.macConfigGroupBox);
             this.Controls.Add(this.ipConfigGroupBox);
             this.Controls.Add(this.basicConfigGroupBox);
-            this.Controls.Add(this.saveAclRuleButton);
+            this.Controls.Add(this.saveEntryButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "AddAclRuleWindow";
+            this.Name = "AddAccessControlEntryWindow";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
-            this.Text = "New ACL rule";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AddAclRuleWindow_FormClosing);
-            this.Load += new System.EventHandler(this.AddAclRuleWindow_Load);
+            this.Text = "New Access Control Entry";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.AddAccessControlEntryWindow_FormClosing);
+            this.Load += new System.EventHandler(this.AddAccessControlEntryWindow_Load);
             this.basicConfigGroupBox.ResumeLayout(false);
             this.basicConfigGroupBox.PerformLayout();
             this.ipConfigGroupBox.ResumeLayout(false);
@@ -368,7 +368,7 @@
 
         #endregion
 
-        private System.Windows.Forms.Button saveAclRuleButton;
+        private System.Windows.Forms.Button saveEntryButton;
         private System.Windows.Forms.GroupBox basicConfigGroupBox;
         private System.Windows.Forms.ComboBox directionComboBox;
         private System.Windows.Forms.ComboBox actionComboBox;

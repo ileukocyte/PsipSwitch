@@ -5,57 +5,57 @@ using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace PsipSwitch {
-    public partial class AddAclRuleWindow : Form {
+    public partial class AddAccessControlEntryWindow : Form {
         private MainWindow mainWindow;
 
-        public AddAclRuleWindow() {
+        public AddAccessControlEntryWindow() {
             InitializeComponent();
         }
 
-        private void saveAclRuleButton_Click(object sender, EventArgs e) {
-            var aclRule = new AccessControlListRule {
-                Action = (AccessControlListAction) actionComboBox.SelectedIndex,
-                Protocol = (AccessControlListProtocol) protocolComboBox.SelectedIndex,
+        private void saveEntryButton_Click(object sender, EventArgs e) {
+            var ace = new AccessControlEntry {
+                Action = (AccessControlEntryAction) actionComboBox.SelectedIndex,
+                Protocol = (AccessControlEntryProtocol) protocolComboBox.SelectedIndex,
                 SourceMacAddress = !string.IsNullOrEmpty(srcMacTextBox.Text) ? PhysicalAddress.Parse(srcMacTextBox.Text.ToUpper().Replace(':', '-')) : null,
                 DestinationMacAddress = !string.IsNullOrEmpty(dstMacTextBox.Text) ? PhysicalAddress.Parse(dstMacTextBox.Text.ToUpper().Replace(':', '-')) : null,
                 SourceIpV4Address = !string.IsNullOrEmpty(srcIpTextBox.Text) ? IPAddress.Parse(srcIpTextBox.Text) : null,
                 DestinationIpV4Address = !string.IsNullOrEmpty(dstIpTextBox.Text) ? IPAddress.Parse(dstIpTextBox.Text) : null,
                 SourcePort = (ushort) srcPortNumericUpDown.Value,
                 DestinationPort = (ushort) dstPortNumericUpDown.Value,
-                Direction = (AccessControlListDirection) directionComboBox.SelectedIndex,
+                Direction = (AccessControlEntryDirection) directionComboBox.SelectedIndex,
                 Interface = (byte) (interfaceComboBox.SelectedIndex + 1),
                 ICMPType = (ICMPType) Enum.GetValues(typeof(ICMPType)).GetValue(icmpComboBox.SelectedIndex),
             };
 
             lock (this) {
-                if (mainWindow.aclTable.IndexOf(aclRule) != -1) {
-                    MessageBox.Show("ACL rule already exists", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (mainWindow.aceTable.IndexOf(ace) != -1) {
+                    MessageBox.Show("ACE already exists", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
                     return;
                 }
 
-                mainWindow.aclTable.Add(aclRule);
-                mainWindow.RefreshAclGrid(mainWindow.aclTable, mainWindow.bindingSourceAcl);
+                mainWindow.aceTable.Add(ace);
+                mainWindow.RefreshAclGrid(mainWindow.aceTable, mainWindow.bindingSourceAcl);
             }
 
             mainWindow?.RemoveOwnedForm(this);
             Close();
         }
 
-        private void AddAclRuleWindow_Load(object sender, EventArgs e) {
+        private void AddAccessControlEntryWindow_Load(object sender, EventArgs e) {
             mainWindow = (MainWindow) Owner;
 
-            foreach (var action in Enum.GetValues(typeof(AccessControlListAction))) {
+            foreach (var action in Enum.GetValues(typeof(AccessControlEntryAction))) {
                 actionComboBox.Items.Add(action.ToString());
             }
 
-            foreach (var protocol in Enum.GetValues(typeof(AccessControlListProtocol))) {
+            foreach (var protocol in Enum.GetValues(typeof(AccessControlEntryProtocol))) {
                 protocolComboBox.Items.Add(protocol.ToString());
             }
 
-            protocolComboBox.SelectedIndex = protocolComboBox.Items.IndexOf(AccessControlListProtocol.Any.ToString());
+            protocolComboBox.SelectedIndex = protocolComboBox.Items.IndexOf(AccessControlEntryProtocol.Any.ToString());
 
-            foreach (var direction in Enum.GetValues(typeof(AccessControlListDirection))) {
+            foreach (var direction in Enum.GetValues(typeof(AccessControlEntryDirection))) {
                 directionComboBox.Items.Add(direction.ToString());
             }
 
@@ -72,11 +72,11 @@ namespace PsipSwitch {
             dstPortNumericUpDown.Enabled = false;
         }
 
-        private void AddAclRuleWindow_FormClosing(object sender, FormClosingEventArgs e) {
+        private void AddAccessControlEntryWindow_FormClosing(object sender, FormClosingEventArgs e) {
             mainWindow?.RemoveOwnedForm(this);
         }
 
-        private void inputValidation(object sender, EventArgs e) {
+        private void InputValidation(object sender, EventArgs e) {
             var enableButton = actionComboBox.SelectedIndex != -1 &&
                 directionComboBox.SelectedIndex != -1 &&
                 interfaceComboBox.SelectedIndex != -1;
@@ -86,13 +86,13 @@ namespace PsipSwitch {
             enableButton &= (string.IsNullOrEmpty(srcIpTextBox.Text) || IsValidIpAddress(srcIpTextBox.Text));
             enableButton &= (string.IsNullOrEmpty(dstIpTextBox.Text) || IsValidIpAddress(dstIpTextBox.Text));
 
-            saveAclRuleButton.Enabled = enableButton;
+            saveEntryButton.Enabled = enableButton;
 
             if (sender == protocolComboBox) {
-                var protocol = (AccessControlListProtocol) protocolComboBox.SelectedIndex;
-                icmpComboBox.Enabled = protocol == AccessControlListProtocol.ICMP;
-                srcPortNumericUpDown.Enabled = protocol == AccessControlListProtocol.TCP || protocol == AccessControlListProtocol.UDP;
-                dstPortNumericUpDown.Enabled = protocol == AccessControlListProtocol.TCP || protocol == AccessControlListProtocol.UDP;
+                var protocol = (AccessControlEntryProtocol) protocolComboBox.SelectedIndex;
+                icmpComboBox.Enabled = protocol == AccessControlEntryProtocol.ICMP;
+                srcPortNumericUpDown.Enabled = protocol == AccessControlEntryProtocol.TCP || protocol == AccessControlEntryProtocol.UDP;
+                dstPortNumericUpDown.Enabled = protocol == AccessControlEntryProtocol.TCP || protocol == AccessControlEntryProtocol.UDP;
 
                 if (!icmpComboBox.Enabled) {
                     icmpComboBox.SelectedIndex = icmpComboBox.Items.IndexOf(ICMPType.Any.ToString());

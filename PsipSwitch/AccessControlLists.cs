@@ -8,19 +8,19 @@ using PacketDotNet;
 using SharpPcap;
 
 namespace PsipSwitch {
-    public enum AccessControlListAction {
+    public enum AccessControlEntryAction {
         Permit,
         Deny,
     }
 
-    public enum AccessControlListProtocol {
+    public enum AccessControlEntryProtocol {
         Any,
         ICMP,
         TCP,
         UDP,
     }
 
-    public enum AccessControlListDirection {
+    public enum AccessControlEntryDirection {
         Inbound,
         Outbound,
     }
@@ -43,23 +43,23 @@ namespace PsipSwitch {
         ExtendedEchoReply = 43,
     }
 
-    public struct AccessControlListRule {
-        public AccessControlListAction Action { get; set; }
-        public AccessControlListProtocol Protocol { get; set; }
+    public struct AccessControlEntry {
+        public AccessControlEntryAction Action { get; set; }
+        public AccessControlEntryProtocol Protocol { get; set; }
         public PhysicalAddress SourceMacAddress { get; set; }
         public PhysicalAddress DestinationMacAddress { get; set; }
         public IPAddress SourceIpV4Address { get; set; }
         public IPAddress DestinationIpV4Address { get; set; }
         public ushort SourcePort { get; set; }
         public ushort DestinationPort { get; set; }
-        public AccessControlListDirection Direction { get; set; }
+        public AccessControlEntryDirection Direction { get; set; }
         public byte Interface { get; set; }
         public ICMPType ICMPType { get; set; }
 
-        public static (bool, AccessControlListDirection) AnalyzePacket(
+        public static (bool, AccessControlEntryDirection) AnalyzePacket(
             RawCapture rawPacket,
             byte interfaceIndex,
-            List<AccessControlListRule> aclTable
+            List<AccessControlEntry> aclTable
         ) {
             var packet = Packet.ParsePacket(rawPacket.LinkLayerType, rawPacket.Data);
 
@@ -72,9 +72,9 @@ namespace PsipSwitch {
 
                 var interfaceMatch = rule.Interface == interfaceIndex;
                 var protocolMatch = rule.Protocol switch {
-                    AccessControlListProtocol.TCP => tcpPacket != null,
-                    AccessControlListProtocol.UDP => udpPacket != null,
-                    AccessControlListProtocol.ICMP => icmpPacket != null,
+                    AccessControlEntryProtocol.TCP => tcpPacket != null,
+                    AccessControlEntryProtocol.UDP => udpPacket != null,
+                    AccessControlEntryProtocol.ICMP => icmpPacket != null,
                     _ => true,
                 };
                 var srcMacMatch = rule.SourceMacAddress == null
@@ -98,22 +98,21 @@ namespace PsipSwitch {
                     && srcMacMatch && dstMacMatch
                     && srcIpMatch && dstIpMatch
                     && (
-                        rule.Protocol == AccessControlListProtocol.Any
-                        || ((rule.Protocol == AccessControlListProtocol.TCP || rule.Protocol == AccessControlListProtocol.UDP) && srcPortMatch && dstPortMatch)
-                        || (rule.Protocol == AccessControlListProtocol.ICMP && icmpMatch)
+                        rule.Protocol == AccessControlEntryProtocol.Any
+                        || ((rule.Protocol == AccessControlEntryProtocol.TCP || rule.Protocol == AccessControlEntryProtocol.UDP) && srcPortMatch && dstPortMatch)
+                        || (rule.Protocol == AccessControlEntryProtocol.ICMP && icmpMatch)
                     );
 
                 if (match) {
-                    return (rule.Action == AccessControlListAction.Permit, rule.Direction);
+                    return (rule.Action == AccessControlEntryAction.Permit, rule.Direction);
                 }
             }
 
-            return (true, AccessControlListDirection.Outbound);
+            return (true, AccessControlEntryDirection.Outbound);
         }
     }
 
-    public struct GuiAclRule {
-        [DisplayName("ACL Action")]
+    public struct GuiAccessControlEntry {
         public string Action { get; set; }
         public string Direction { get; set; }
         public byte Interface { get; set; }
@@ -133,8 +132,8 @@ namespace PsipSwitch {
         [DisplayName("ICMP Type")]
         public string ICMPType { get; set; }
 
-        public static GuiAclRule FromAccessControlListRule(AccessControlListRule rule) {
-            return new GuiAclRule {
+        public static GuiAccessControlEntry FromAccessControlEntry(AccessControlEntry rule) {
+            return new GuiAccessControlEntry {
                 Action = rule.Action.ToString(),
                 Protocol = rule.Protocol.ToString(),
                 SourceMacAddress = rule.SourceMacAddress == null ? "Any" : MainWindow.FormatMacAddress(rule.SourceMacAddress),

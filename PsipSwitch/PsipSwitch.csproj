@@ -81,17 +81,17 @@
       <DependentUpon>MainWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="NetworkStats.cs" />
-    <Compile Include="AddAclRuleWindow.cs">
+    <Compile Include="AddAccessControlEntryWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AddAclRuleWindow.Designer.cs">
-      <DependentUpon>AddAclRuleWindow.cs</DependentUpon>
+    <Compile Include="AddAccessControlEntryWindow.Designer.cs">
+      <DependentUpon>AddAccessControlEntryWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Syslog.cs" />
-    <EmbeddedResource Include="AddAclRuleWindow.resx">
-      <DependentUpon>AddAclRuleWindow.cs</DependentUpon>
+    <EmbeddedResource Include="AddAccessControlEntryWindow.resx">
+      <DependentUpon>AddAccessControlEntryWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainWindow.resx">
       <DependentUpon>MainWindow.cs</DependentUpon>
