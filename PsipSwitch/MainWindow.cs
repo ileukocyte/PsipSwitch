@@ -41,8 +41,8 @@ namespace PsipSwitch {
 
         private readonly CaptureDeviceList devices = CaptureDeviceList.Instance;
 
-        internal ILiveDevice Device1 { get; set; }
-        internal ILiveDevice Device2 { get; set; }
+        private ILiveDevice Device1 { get; set; }
+        private ILiveDevice Device2 { get; set; }
 
         private readonly ConcurrentDictionary<ILiveDevice, System.Threading.Timer> deviceTimers = [];
 
@@ -119,17 +119,17 @@ namespace PsipSwitch {
         }
 
         internal void RefreshAclGrid(
-            List<AccessControlEntry> aclTable,
+            List<AccessControlEntry> aceTable,
             BindingSource bindingSource
         ) {
             if (InvokeRequired) {
                 Invoke(
                     new Action<List<AccessControlEntry>, BindingSource>(RefreshAclGrid),
-                    aclTable,
+                    aceTable,
                     bindingSource
                 );
             } else {
-                var list = aclTable.Select(r => GuiAccessControlEntry.FromAccessControlEntry(r)).ToList();
+                var list = aceTable.Select(r => GuiAccessControlEntry.FromAccessControlEntry(r)).ToList();
 
                 bindingSource.DataSource = new BindingList<GuiAccessControlEntry>(list);
             }
@@ -146,8 +146,10 @@ namespace PsipSwitch {
                 return;
             }
 
+            var packet = Packet.ParsePacket(rawPacket.LinkLayerType, rawPacket.Data).Extract<EthernetPacket>();
+
             var (allowed, direction) = AccessControlEntry
-                .AnalyzePacket(rawPacket, (byte) (device == Device1 ? 1 : 2), aceTable);
+                .AnalyzePacket(packet, (byte) (device == Device1 ? 1 : 2), aceTable);
 
             if (!allowed && direction == AccessControlEntryDirection.Inbound) {
                 return;
@@ -161,7 +163,6 @@ namespace PsipSwitch {
                 RefreshProtocolGrid(in2, bindingSourceIn2);
             }
 
-            var packet = Packet.ParsePacket(rawPacket.LinkLayerType, rawPacket.Data).Extract<EthernetPacket>();
             var sourceMac = packet.SourceHardwareAddress;
             var destMac = packet.DestinationHardwareAddress;
 
@@ -181,7 +182,7 @@ namespace PsipSwitch {
                         (Device2, Device1) = (Device1, Device2);
 
                         if (SyslogEnabled) {
-                            Syslog.Log($"MAC {FormatMacAddress(sourceMac)} port swap ({record.Interface} -> {port}) detected", SyslogSeverity.Notice, Device1, Device2);
+                            Syslog.Log($"MAC {FormatMacAddress(sourceMac)} port swap ({record.Interface} -> {port}) detected", SyslogSeverity.Notice, Device1, Device2, aceTable);
                         }
                     }
                 }
@@ -191,7 +192,7 @@ namespace PsipSwitch {
                 timer.Change(TimeSpan.FromSeconds(timeout), Timeout.InfiniteTimeSpan);
             } else {
                 if (SyslogEnabled) {
-                    Syslog.Log($"MAC {FormatMacAddress(sourceMac)} learned", SyslogSeverity.Debug, Device1, Device2);
+                    Syslog.Log($"MAC {FormatMacAddress(sourceMac)} learned", SyslogSeverity.Debug, Device1, Device2, aceTable);
                 }
 
                 timer = new System.Threading.Timer(new TimerCallback((state) => {
@@ -211,7 +212,7 @@ namespace PsipSwitch {
                 (_, _) => {
                     if (SyslogEnabled) {
                         if (macAddressTable[sourceMac].Interface.MacAddress != device.MacAddress) {
-                            Syslog.Log($"MAC {FormatMacAddress(sourceMac)} port updated", SyslogSeverity.Informational, Device1, Device2);
+                            Syslog.Log($"MAC {FormatMacAddress(sourceMac)} port updated", SyslogSeverity.Informational, Device1, Device2, aceTable);
                         }
                     }
 
@@ -357,7 +358,7 @@ namespace PsipSwitch {
         private void ResetStats(bool resetDevice1 = true, bool resetDevice2 = true) {
             if (resetDevice1) {
                 if (SyslogEnabled) {
-                    Syslog.Log($"Interface 1 ({Device1.Description}) statistics reset", SyslogSeverity.Debug, Device1, Device2);
+                    Syslog.Log($"Interface 1 statistics reset", SyslogSeverity.Debug, Device1, Device2, aceTable);
                 }
 
                 NetworkStats.Reset(in1);
@@ -369,7 +370,7 @@ namespace PsipSwitch {
 
             if (resetDevice2) {
                 if (SyslogEnabled) {
-                    Syslog.Log($"Interface 2 ({Device2.Description}) statistics reset", SyslogSeverity.Debug, Device1, Device2);
+                    Syslog.Log($"Interface 2 statistics reset", SyslogSeverity.Debug, Device1, Device2, aceTable);
                 }
 
                 NetworkStats.Reset(in2);
@@ -435,7 +436,7 @@ namespace PsipSwitch {
             RefreshMacGrid(macAddressTable, bindingSourceMac);
 
             if (SyslogEnabled && IsRunning) {
-                Syslog.Log("MAC table cleared", SyslogSeverity.Informational, Device1, Device2);
+                Syslog.Log("MAC table cleared", SyslogSeverity.Informational, Device1, Device2, aceTable);
             }
         }
 
@@ -454,7 +455,7 @@ namespace PsipSwitch {
                 macAddressTable[kv.Key] = entry;
 
                 if (SyslogEnabled) {
-                    Syslog.Log($"MAC {FormatMacAddress(kv.Key)} timeout updated to {value}s", SyslogSeverity.Debug, Device1, Device2);
+                    Syslog.Log($"MAC {FormatMacAddress(kv.Key)} timeout updated to {value}s", SyslogSeverity.Debug, Device1, Device2, aceTable);
                 }
             });
         }
@@ -500,10 +501,18 @@ namespace PsipSwitch {
         }
 
         private void aceRemoveButton_Click(object sender, EventArgs e) {
-            var selectedRow = dataGridViewAcl.SelectedRows[0];
+            var selectedRows = dataGridViewAcl.SelectedRows;
+            List<AccessControlEntry> aceToRemove = [];
 
             lock (_lock) {
-                aceTable.RemoveAt(selectedRow.Index);
+                foreach (DataGridViewRow row in selectedRows) {
+                    aceToRemove.Add(aceTable[row.Index]);
+                }
+
+                foreach (var ace in aceToRemove) {
+                    aceTable.Remove(ace);
+                }
+
                 RefreshAclGrid(aceTable, bindingSourceAcl);
             }
         }
@@ -515,12 +524,12 @@ namespace PsipSwitch {
             }
 
             if (SyslogEnabled && IsRunning) {
-                Syslog.Log("ACE table cleared", SyslogSeverity.Informational, Device1, Device2);
+                Syslog.Log("ACE table cleared", SyslogSeverity.Informational, Device1, Device2, aceTable);
             }
         }
 
         private void dataGridViewAcl_SelectionChanged(object sender, EventArgs e) {
-            if (dataGridViewAcl.SelectedRows.Count != 1) {
+            if (dataGridViewAcl.SelectedRows.Count == 0) {
                 aceRemoveButton.Enabled = false;
 
                 return;

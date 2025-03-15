@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -78,7 +79,8 @@ namespace PsipSwitch {
             string message,
             SyslogSeverity severity,
             ILiveDevice device1,
-            ILiveDevice device2
+            ILiveDevice device2,
+            List<AccessControlEntry> aceTable
         ) {
             if (device1 == null || device2 == null || ServerAddress == null || ClientAddress == null) {
                 return;
@@ -104,6 +106,12 @@ namespace PsipSwitch {
                 ) {
                     PayloadPacket = ipPacket,
                 };
+
+                var (allowed, _) = AccessControlEntry.AnalyzePacket(ethernetPacket, 1, aceTable);
+
+                if (!allowed) {
+                    return;
+                }
 
                 device2.SendPacket(ethernetPacket);
             } catch {

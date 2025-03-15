@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -57,19 +58,17 @@ namespace PsipSwitch {
         public ICMPType ICMPType { get; set; }
 
         public static (bool, AccessControlEntryDirection) AnalyzePacket(
-            RawCapture rawPacket,
+            Packet packet,
             byte interfaceIndex,
-            List<AccessControlEntry> aclTable
+            List<AccessControlEntry> aceTable
         ) {
-            var packet = Packet.ParsePacket(rawPacket.LinkLayerType, rawPacket.Data);
+            var ethPacket = packet.Extract<EthernetPacket>();
+            var ipPacket = packet.Extract<IPv4Packet>();
+            var tcpPacket = packet.Extract<TcpPacket>();
+            var udpPacket = packet.Extract<UdpPacket>();
+            var icmpPacket = packet.Extract<IcmpV4Packet>();
 
-            foreach (var rule in aclTable) {
-                var ethPacket = packet.Extract<EthernetPacket>();
-                var ipPacket = packet.Extract<IPv4Packet>();
-                var tcpPacket = packet.Extract<TcpPacket>();
-                var udpPacket = packet.Extract<UdpPacket>();
-                var icmpPacket = packet.Extract<IcmpV4Packet>();
-
+            foreach (var rule in aceTable) {
                 var interfaceMatch = rule.Interface == interfaceIndex;
                 var protocolMatch = rule.Protocol switch {
                     AccessControlEntryProtocol.TCP => tcpPacket != null,
