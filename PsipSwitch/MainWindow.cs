@@ -19,7 +19,9 @@ namespace PsipSwitch {
 
         private static readonly PhysicalAddress BroadcastMac = PhysicalAddress.Parse("FF-FF-FF-FF-FF-FF");
 
-        private readonly object _lock = new();
+        private readonly object _macLock = new();
+        private readonly object _guiLock = new();
+        private readonly object _aclLock = new();
 
         private readonly ConcurrentDictionary<Protocol, long> in1 = NetworkStats.Create();
         private readonly ConcurrentDictionary<Protocol, long> in2 = NetworkStats.Create();
@@ -173,7 +175,7 @@ namespace PsipSwitch {
                 var entry = macAddressTable[sourceMac];
 
                 // cable swap
-                lock (_lock) {
+                lock (_macLock) {
                     var guiData = (BindingList<GuiMacAddressTableEntry>) bindingSourceMac.DataSource;
                     var record = guiData.First(r => r.MacAddress == FormatMacAddress(sourceMac));
                     var port = (byte) (device.MacAddress.Equals(Device1.MacAddress) ? 1 : 2);
@@ -276,7 +278,7 @@ namespace PsipSwitch {
         }
 
         private void toggleButton_Click(object sender, EventArgs e) {
-            lock (_lock) {
+            lock (_guiLock) {
                 if (IsRunning) {
                     toggleButton.Text = "Start";
                     refreshButton.Enabled = true;
@@ -312,7 +314,7 @@ namespace PsipSwitch {
             Device2.StartCapture();
 
             var callback = new TimerCallback((state) => {
-                lock (_lock) {
+                lock (_guiLock) {
                     if (IsRunning) {
                         toggleButton_Click(sender, e);
                     }
@@ -389,7 +391,7 @@ namespace PsipSwitch {
             if (comboBoxDevice1.SelectedItem != null && comboBoxDevice2.SelectedItem != null) {
                 toggleButton.Enabled = true;
 
-                lock (_lock) {
+                lock (_guiLock) {
                     if (IsRunning &&
                         (Device1 != devices[comboBoxDevice1.SelectedIndex] || Device2 != devices[comboBoxDevice2.SelectedIndex])
                     ) {
@@ -504,7 +506,7 @@ namespace PsipSwitch {
             var selectedRows = dataGridViewAcl.SelectedRows;
             List<AccessControlEntry> aceToRemove = [];
 
-            lock (_lock) {
+            lock (_aclLock) {
                 foreach (DataGridViewRow row in selectedRows) {
                     aceToRemove.Add(aceTable[row.Index]);
                 }
@@ -518,7 +520,7 @@ namespace PsipSwitch {
         }
 
         private void aceClearButton_Click(object sender, EventArgs e) {
-            lock (_lock) {
+            lock (_aclLock) {
                 aceTable.Clear();
                 RefreshAclGrid(aceTable, bindingSourceAcl);
             }
