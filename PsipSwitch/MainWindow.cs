@@ -150,8 +150,12 @@ namespace PsipSwitch {
 
             var packet = Packet.ParsePacket(rawPacket.LinkLayerType, rawPacket.Data).Extract<EthernetPacket>();
 
-            var (allowed, direction) = AccessControlEntry
-                .AnalyzePacket(packet, (byte) (device == Device1 ? 1 : 2), aceTable);
+            var (allowed, direction) = (true, AccessControlEntryDirection.Outbound);
+
+            if (aceTable.Any()) {
+                (allowed, direction) = AccessControlEntry
+                    .AnalyzePacket(packet, (byte) (device == Device1 ? 1 : 2), aceTable);
+            }
 
             if (!allowed && direction == AccessControlEntryDirection.Inbound) {
                 return;
@@ -314,11 +318,16 @@ namespace PsipSwitch {
             Device2.StartCapture();
 
             var callback = new TimerCallback((state) => {
-                lock (_guiLock) {
-                    if (IsRunning) {
-                        toggleButton_Click(sender, e);
-                    }
-                }
+                var device = (ILiveDevice) state;
+                var port = (byte) (device.MacAddress.Equals(Device1.MacAddress) ? 1 : 2);
+                var addresses = macAddressTable.Where(kv => kv.Value.Interface == device).ToList();
+                
+                Parallel.ForEach(addresses, kv => {
+                    kv.Value.Timer.Dispose();
+                    macAddressTable.TryRemove(kv.Key, out _);
+                });
+
+                RefreshMacGrid(macAddressTable, bindingSourceMac);
             });
 
             deviceTimers[Device1] = new System.Threading.Timer(

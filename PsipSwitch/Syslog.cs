@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -51,10 +52,14 @@ namespace PsipSwitch {
         public static readonly byte Version = 1;
         public static readonly string AppName = "PsipSwitch";
         public static readonly char ByteOrderMark = '\uFEFF';
-        public static readonly ushort SrcPort = 49152; // ephemeral port
+        public static readonly ushort SrcPort;
         public static readonly ushort DstPort = 514;
         public static IPAddress ServerAddress = null;
         public static IPAddress ClientAddress = null;
+
+        static Syslog() {
+            SrcPort = GetAvailablePort(); // ephemeral port
+        }
 
         // RFC 3339
         public static string GetTimestamp() => DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
@@ -107,7 +112,11 @@ namespace PsipSwitch {
                     PayloadPacket = ipPacket,
                 };
 
-                var (allowed, _) = AccessControlEntry.AnalyzePacket(ethernetPacket, 1, aceTable);
+                var allowed = true;
+
+                if (aceTable != null && aceTable.Any()) {
+                    (allowed, _) = AccessControlEntry.AnalyzePacket(ethernetPacket, 1, aceTable);
+                }
 
                 if (!allowed) {
                     return;
@@ -115,6 +124,18 @@ namespace PsipSwitch {
 
                 device2.SendPacket(ethernetPacket);
             } catch {
+            }
+        }
+
+        private static ushort GetAvailablePort() {
+            var listener = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+
+            try {
+                listener.Start();
+
+                return (ushort) ((IPEndPoint) listener.LocalEndpoint).Port;
+            } finally {
+                listener.Stop();
             }
         }
     }

@@ -6,7 +6,6 @@ using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 
 using PacketDotNet;
-using SharpPcap;
 
 namespace PsipSwitch {
     public enum AccessControlEntryAction {
@@ -68,7 +67,24 @@ namespace PsipSwitch {
             var udpPacket = packet.Extract<UdpPacket>();
             var icmpPacket = packet.Extract<IcmpV4Packet>();
 
-            foreach (var rule in aceTable) {
+            // implicit deny
+            var copied = new List<AccessControlEntry>(aceTable) {
+                new AccessControlEntry {
+                    Action = AccessControlEntryAction.Deny,
+                    Protocol = AccessControlEntryProtocol.Any,
+                    SourceMacAddress = null,
+                    DestinationMacAddress = null,
+                    SourceIpV4Address = null,
+                    DestinationIpV4Address = null,
+                    SourcePort = 0,
+                    DestinationPort = 0,
+                    Direction = AccessControlEntryDirection.Inbound,
+                    Interface = interfaceIndex,
+                    ICMPType = ICMPType.Any,
+                }
+            };
+
+            foreach (var rule in copied) {
                 var interfaceMatch = rule.Interface == interfaceIndex;
                 var protocolMatch = rule.Protocol switch {
                     AccessControlEntryProtocol.TCP => tcpPacket != null,
@@ -90,8 +106,8 @@ namespace PsipSwitch {
                 var dstPortMatch = rule.DestinationPort == 0
                     || (tcpPacket != null && tcpPacket.DestinationPort == rule.DestinationPort)
                     || (udpPacket != null && udpPacket.DestinationPort == rule.DestinationPort);
-                var icmpMatch = icmpPacket != null
-                    && (rule.ICMPType == ICMPType.Any || (byte) rule.ICMPType == icmpPacket.HeaderData[0]);
+                var icmpMatch = rule.ICMPType == ICMPType.Any
+                    || (icmpPacket != null && rule.ICMPType == (ICMPType) icmpPacket.TypeCode);
 
                 var match = interfaceMatch && protocolMatch
                     && srcMacMatch && dstMacMatch
