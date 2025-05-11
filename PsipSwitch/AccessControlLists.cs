@@ -15,6 +15,7 @@ namespace PsipSwitch {
 
     public enum AccessControlEntryProtocol {
         Any,
+        ARP,
         ICMP,
         TCP,
         UDP,
@@ -62,31 +63,16 @@ namespace PsipSwitch {
             List<AccessControlEntry> aceTable
         ) {
             var ethPacket = packet.Extract<EthernetPacket>();
+            var arpPacket = packet.Extract<ArpPacket>();
             var ipPacket = packet.Extract<IPv4Packet>();
             var tcpPacket = packet.Extract<TcpPacket>();
             var udpPacket = packet.Extract<UdpPacket>();
             var icmpPacket = packet.Extract<IcmpV4Packet>();
 
-            // implicit deny
-            var copied = new List<AccessControlEntry>(aceTable) {
-                new AccessControlEntry {
-                    Action = AccessControlEntryAction.Deny,
-                    Protocol = AccessControlEntryProtocol.Any,
-                    SourceMacAddress = null,
-                    DestinationMacAddress = null,
-                    SourceIpV4Address = null,
-                    DestinationIpV4Address = null,
-                    SourcePort = 0,
-                    DestinationPort = 0,
-                    Direction = AccessControlEntryDirection.Inbound,
-                    Interface = interfaceIndex,
-                    ICMPType = ICMPType.Any,
-                }
-            };
-
-            foreach (var rule in copied) {
+            foreach (var rule in aceTable) {
                 var interfaceMatch = rule.Interface == interfaceIndex;
                 var protocolMatch = rule.Protocol switch {
+                    AccessControlEntryProtocol.ARP => arpPacket != null,
                     AccessControlEntryProtocol.TCP => tcpPacket != null,
                     AccessControlEntryProtocol.UDP => udpPacket != null,
                     AccessControlEntryProtocol.ICMP => icmpPacket != null,
@@ -114,6 +100,7 @@ namespace PsipSwitch {
                     && srcIpMatch && dstIpMatch
                     && (
                         rule.Protocol == AccessControlEntryProtocol.Any
+                        || rule.Protocol == AccessControlEntryProtocol.ARP
                         || ((rule.Protocol == AccessControlEntryProtocol.TCP || rule.Protocol == AccessControlEntryProtocol.UDP) && srcPortMatch && dstPortMatch)
                         || (rule.Protocol == AccessControlEntryProtocol.ICMP && icmpMatch)
                     );
